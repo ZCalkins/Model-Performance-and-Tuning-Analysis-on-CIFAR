@@ -1,4 +1,4 @@
-# data transformations
+# Data Transformations
 
 flat_transform_augment = transforms.Compose([
   v2.RandomResizedCrop(224),
@@ -21,6 +21,56 @@ flat_transform_basic = transforms.Compose([
   v2.Compose([v2.ToImage(), v2.ToDtype(torch.float32, scale=True)]),
   transforms.Lambda(lambda x: torch.flatten())
 ])
+
+# Datasets
+
+train_data_flat = datasets.CIFAR100(
+    root="data",
+    train=True,
+    download=True,
+    transform=flat_transform_basic,
+    target_transform=None
+)
+
+train_data_flat_augment = datasets.CIFAR100(
+    root="data",
+    train=True,
+    download=True,
+    transform=flat_transform_augment,
+    target_transform=None
+)
+
+train_data_std_img = datasets.CIFAR100(
+    root="data",
+    train=True,
+    download=True,
+    transform=ToTensor(),
+    target_transform=None
+)
+
+train_data_std_img_augment = datasets.CIFAR100(
+    root="data",
+    train=True,
+    download=True,
+    transform=std_img_transform,
+    target_transform=None
+)
+
+test_data_flat = datasets.CIFAR100(
+    root="data",
+    train=False,
+    download=True,
+    transform=flat_transform_basic,
+    target_transform=None
+)
+
+test_data_std_img = datasets.CIFAR100(
+    root="data",
+    train=False,
+    download=True,
+    transform=ToTensor(),
+    target_transform=None
+)
 
 # DataLoaders
 
