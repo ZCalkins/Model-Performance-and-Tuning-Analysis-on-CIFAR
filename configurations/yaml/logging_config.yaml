@@ -1,0 +1,2 @@
+logging:
+  base_log_dir: "./logs/tensorboard"
