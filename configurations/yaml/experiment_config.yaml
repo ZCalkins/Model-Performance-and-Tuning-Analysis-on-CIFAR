@@ -6,8 +6,4 @@ general:
 model_params:
   input_shape: [3, 32, 32]
   output_shape: 100
-  optimizer: "adam"
-  learning_rate: 0.001
-  batch_size: 32
-  num_epochs: 10
 
