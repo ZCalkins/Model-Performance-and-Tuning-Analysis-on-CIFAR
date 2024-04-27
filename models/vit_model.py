@@ -31,15 +31,14 @@ class PatchEmbedding(nn.Module):
         self.proj = nn.Conv2d(in_channels, hidden_dim, kernel_size=patch_size, stride=patch_size)
 
     def forward(self, x):
-        x = self.proj(x)  # (B, hidden_dim, H/P, W/P)
-        x = x.flatten(2)  # (B, hidden_dim, num_patches)
-        x = x.transpose(1, 2)  # (B, num_patches, hidden_dim)
+        x = self.proj(x)
+        x = x.flatten(2)
+        x = x.transpose(1, 2)
         return x
 
 class ViTModel(nn.Module):
     def __init__(self, config: ViTModelConfig):
         super().__init__()
-        # Calculate the number of patches
         self.num_patches = (config.image_size // config.patch_size) ** 2
 
         self.patch_embed = PatchEmbedding(
