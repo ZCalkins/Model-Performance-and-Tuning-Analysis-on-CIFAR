@@ -1,1 +1,95 @@
-import models.cnn_model
+from models import cnn_model
+
+cnn_model.CNNModelConfig.base() = {
+    'model_name': 'CNN_Baseline',
+    'optimizer': 'adam',
+    'learning_rate': 0.001,
+    'batch_size': 32,
+    'num_epochs': 10,
+    'layers':[
+    {
+        'in_channels': 3,
+        'out_channels': 32,
+        'kernel_size': 3,
+        'stride': 1,
+        'padding': 1,
+        'use_batch_norm': True,
+        'use_pool': False,
+        'pool_size': 2,
+        'pool_stride': 2,
+        'pool_type': 'max',
+        'use_dropout': False,
+        'dropout_rate': 0.0
+    },
+    {
+        'in_channels': 32,
+        'out_channels': 32,
+        'kernel_size': 3,
+        'stride': 1,
+        'padding': 1,
+        'use_batch_norm': True,
+        'use_pool': True,
+        'pool_size': 2,
+        'pool_stride': 2,
+        'pool_type': 'max',
+        'use_dropout': True,
+        'dropout_rate': 0.1
+    },
+    {
+        'in_channels': 32,
+        'out_channels': 32,
+        'kernel_size': 3,
+        'stride': 1,
+        'padding': 1,
+        'use_batch_norm': True,
+        'use_pool': False,
+        'pool_size': 2,
+        'pool_stride': 2,
+        'pool_type': 'max',
+        'use_dropout': True,
+        'dropout_rate': 0.2
+    },
+    {
+        'in_channels': 32,
+        'out_channels': 64,
+        'kernel_size': 5,
+        'stride': 1,
+        'padding': 1,
+        'use_batch_norm': True,
+        'use_pool': True,
+        'pool_size': 2,
+        'pool_stride': 2,
+        'pool_type': 'max',
+        'use_dropout': True,
+        'dropout_rate': 0.3
+    },
+    {
+        'in_channels': 64,
+        'out_channels': 64,
+        'kernel_size': 7,
+        'stride': 1,
+        'padding': 1,
+        'use_batch_norm': True,
+        'use_pool': False,
+        'pool_size': 2,
+        'pool_stride': 2,
+        'pool_type': 'max',
+        'use_dropout': True,
+        'dropout_rate': 0.4
+    },
+    {
+        'in_channels': 64,
+        'out_channels': 100,
+        'kernel_size': 7,
+        'stride': 1,
+        'padding': 1,
+        'use_batch_norm': True,
+        'use_pool': False,
+        'pool_size': 2,
+        'pool_stride': 2,
+        'pool_type': 'max',
+        'use_dropout': True,
+        'dropout_rate': 0.5
+    }
+]}
+
