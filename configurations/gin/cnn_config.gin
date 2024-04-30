@@ -93,3 +93,102 @@ cnn_model.CNNModelConfig.base() = {
     }
 ]}
 
+# Ablation 1: Varying the dropout rate
+cnn_model.CNNModelConfig.dropout_ablation() = {
+    'layers': [
+    {
+        'in_channels': 3,
+        'out_channels': 32,
+        'kernel_size': 3,
+        'stride': 1,
+        'padding': 1,
+        'use_batch_norm': True,
+        'use_pool': False,
+        'pool_size': 2,
+        'pool_stride': 2,
+        'pool_type': 'max',
+        'use_dropout': False,
+        'dropout_rate': 0.2
+    },
+    {
+        'in_channels': 32,
+        'out_channels': 32,
+        'kernel_size': 3,
+        'stride': 1,
+        'padding': 1,
+        'use_batch_norm': True,
+        'use_pool': True,
+        'pool_size': 2,
+        'pool_stride': 2,
+        'pool_type': 'max',
+        'use_dropout': True,
+        'dropout_rate': 0.3
+    },
+    {
+        'in_channels': 32,
+        'out_channels': 32,
+        'kernel_size': 3,
+        'stride': 1,
+        'padding': 1,
+        'use_batch_norm': True,
+        'use_pool': False,
+        'pool_size': 2,
+        'pool_stride': 2,
+        'pool_type': 'max',
+        'use_dropout': True,
+        'dropout_rate': 0.4
+    },
+    {
+        'in_channels': 32,
+        'out_channels': 64,
+        'kernel_size': 5,
+        'stride': 1,
+        'padding': 1,
+        'use_batch_norm': True,
+        'use_pool': True,
+        'pool_size': 2,
+        'pool_stride': 2,
+        'pool_type': 'max',
+        'use_dropout': True,
+        'dropout_rate': 0.5
+    },
+    {
+        'in_channels': 64,
+        'out_channels': 64,
+        'kernel_size': 7,
+        'stride': 1,
+        'padding': 1,
+        'use_batch_norm': True,
+        'use_pool': False,
+        'pool_size': 2,
+        'pool_stride': 2,
+        'pool_type': 'max',
+        'use_dropout': True,
+        'dropout_rate': 0.6
+    },
+    {
+        'in_channels': 64,
+        'out_channels': 100,
+        'kernel_size': 7,
+        'stride': 1,
+        'padding': 1,
+        'use_batch_norm': True,
+        'use_pool': False,
+        'pool_size': 2,
+        'pool_stride': 2,
+        'pool_type': 'max',
+        'use_dropout': True,
+        'dropout_rate': 0.7
+    }
+]}
+
+# Ablation 2: Testing a different optimizer and learning rate
+cnn_model.CNNModelConfig.optimizer_ablation() = {
+    'optimizer': 'sgd',
+    'learning_rate': 0.01
+}
+
+# Ablation 3: Testing larger batch and epoch size
+cnn_model.CNNModelConfig.batch_ablation() = {
+    'batch_size': 64,
+    'num_epochs': 20
