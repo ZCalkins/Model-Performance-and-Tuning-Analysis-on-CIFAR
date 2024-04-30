@@ -192,3 +192,4 @@ cnn_model.CNNModelConfig.optimizer_ablation() = {
 cnn_model.CNNModelConfig.batch_ablation() = {
     'batch_size': 64,
     'num_epochs': 20
+}
