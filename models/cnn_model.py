@@ -3,6 +3,7 @@ from typing import List, Tuple, Optional
 import torch
 from torch import nn
 
+@gin.configurable
 @dataclass
 class CNNLayerConfig:
     in_channels: int
@@ -18,6 +19,7 @@ class CNNLayerConfig:
     use_dropout: bool = False
     dropout_rate: Optional[float] = 0.0
 
+@gin.configurable
 @dataclass
 class CNNModelConfig:
     model_name: str
@@ -29,6 +31,7 @@ class CNNModelConfig:
     batch_size: int = 32
     num_epochs: int = 10
 
+@gin.configurable
 class CNNModel(nn.Module):
     def __init__(self, config: CNNModelConfig):
         super().__init__()
