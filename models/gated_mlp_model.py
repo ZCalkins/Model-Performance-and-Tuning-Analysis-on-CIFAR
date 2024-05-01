@@ -3,6 +3,7 @@ from typing import List
 import torch
 import torch.nn as nn
 
+@gin.configurable
 @dataclass
 class GatedMLPLayerConfig:
     input_dim: int
@@ -25,6 +26,8 @@ class GatedMLPLayer(nn.Module):
         x = self.dropout(x)
         return x
 
+@gin.configurable
+@dataclass
 class GatedMLPModelConfig:
     model_name: str
     input_dim: int
@@ -36,6 +39,7 @@ class GatedMLPModelConfig:
     num_epochs: int = 10
     dropout_rate: float = 0.1
 
+@gin.configurable
 class GatedMLP(nn.Module):
     def __init__(self, config: GatedMLPModelConfig):
         super(GatedMLP, self).__init__()
