@@ -87,7 +87,7 @@ train_dataloader_std_img = DataLoader(dataset=train_data_std_img,
                                       shuffle=True)
 
 train_dataloader_std_img_augment = DataLoader(train_data_std_img_augment,
-                                              batch_size_BATCH_SIZE,
+                                              batch_size=BATCH_SIZE,
                                               shuffle=True)
 
 test_dataloader_flat = DataLoader(dataset=test_data_flat,
