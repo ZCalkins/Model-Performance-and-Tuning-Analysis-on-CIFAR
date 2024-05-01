@@ -1,1 +1,40 @@
+from models import gated_mlp_model
 
+# Base configuration for the GMLP model
+
+models.gmlp_model.GatedMLPModelConfig.base() = {
+    'model_name': 'GMLP_Baseline',
+    'input_dim': 3072,
+    'output_dim': 100,
+    'layers'=[
+    GatedMLPLayerConfig(3072, 1024, use_gate=True, dropout_rate=0.2),
+    GatedMLPLayerConfig(1024, 1024, use_gate=False, dropout_rate=0.0),
+    GatedMLPLayerConfig(1024, 512, use_gate=True, dropout_rate=0.2),
+    GatedMLPLayerConfig(512, 512, use_gate=False, dropout_rate=0.0),
+    GatedMLPLayerConfig(512, 256, use_gate=True, dropout_rate=0.1),
+    GatedMLPLayerConfig(256, 256, use_gate=False, dropout_rate=0.0),
+    GatedMLPLayerConfig(256, 100, use_gate=True, dropout_rate=0.1)
+    ],
+    'optimizer': 'adam',
+    'learning_rate': 0.001,
+    'batch_size': 32,
+    'num_epochs': 10
+}
+
+# Ablation configuration for different dropout rates using scope
+
+dropout_variation/models.gmlp_model.GatedMLPModelConfig.dropout_rate = 0.2
+dropout_variation/models.gmlp_model.GatedMLPModelConfig.layers = [
+    GatedMLPLayerConfig(3072, 1024, use_gate=True, dropout_rate=0.2),
+    GatedMLPLayerConfig(1024, 1024, use_gate=False, dropout_rate=0.2),
+    GatedMLPLayerConfig(1024, 512, use_gate=True, dropout_rate=0.3),
+    GatedMLPLayerConfig(512, 512, use_gate=False, dropout_rate=0.3),
+    GatedMLPLayerConfig(512, 256, use_gate=True, dropout_rate=0.4),
+    GatedMLPLayerConfig(256, 256, use_gate=False, dropout_rate=0.4),
+    GatedMLPLayerConfig(256, 100, use_gate=True, dropout_rate=0.5)
+    ],
+
+# Ablation configuration for different optimizers using scope
+
+optimizer_variation/models.gmlp_model.GatedMLPModelConfig.optimizer = 'sgd'
+optimizer_variation/models.gmlp_model.GatedMLPModelConfig.learning_rate = 0.01
