@@ -1,99 +1,47 @@
-# Data Transformations
+# Data Transformation
 
-flat_transform_augment = transforms.Compose([
-  v2.RandomResizedCrop(224),
-  v2.RandomHorizontalFlip(),
-  v2.AutoAugment(),
-  v2.Compose([v2.ToImage(), v2.ToDtype(torch.float32, scale=True)]),
-  transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-  transforms.Lambda(lambda x: torch.flatten(x))
-])
+import gin
+from torchvision.transforms import v2
 
-std_img_transform = transforms.Compose([
-  v2.RandomResizedCrop(224),
-  v2.RandomHorizontalFlip(),
-  v2.AutoAugment(),
-  v2.Compose([v2.ToImage(), v2.ToDtype(torch.float32, scale=True)]),
-  transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-])
+@gin.configurable
+def create_transform(transform_type='standard', size=224, normalize=True, flatten=False):
 
-flat_transform_basic = transforms.Compose([
-  v2.Compose([v2.ToImage(), v2.ToDtype(torch.float32, scale=True)]),
-  transforms.Lambda(lambda x: torch.flatten())
-])
+    transformations = []
+    if transform_type == 'augmented':
+        transformations.extend([
+            v2.RandomResizedCrop(size),
+            v2.RandomHorizontalFlip(),
+            v2.AutoAugment(),
+        ])
+    else:
+        transformations.extend([
+            v2.Resize(size),
+            v2.CenterCrop(size),
+        ])
+    
+    transformations.append(v2.Compose([v2.ToImage(), v2.ToDtype(torch.float32, scale=True)]))
+    
+    if normalize:
+        transformations.append(v2.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]))
+    
+    if flatten:
+        transformations.append(transforms.Lambda(lambda x: torch.flatten(x)))
+    
+    return transforms.Compose(transformations)
 
 # Datasets
 
-train_data_flat = datasets.CIFAR100(
-    root="data",
-    train=True,
-    download=True,
-    transform=flat_transform_basic,
-    target_transform=None
-)
-
-train_data_flat_augment = datasets.CIFAR100(
-    root="data",
-    train=True,
-    download=True,
-    transform=flat_transform_augment,
-    target_transform=None
-)
-
-train_data_std_img = datasets.CIFAR100(
-    root="data",
-    train=True,
-    download=True,
-    transform=ToTensor(),
-    target_transform=None
-)
-
-train_data_std_img_augment = datasets.CIFAR100(
-    root="data",
-    train=True,
-    download=True,
-    transform=std_img_transform,
-    target_transform=None
-)
-
-test_data_flat = datasets.CIFAR100(
-    root="data",
-    train=False,
-    download=True,
-    transform=flat_transform_basic,
-    target_transform=None
-)
-
-test_data_std_img = datasets.CIFAR100(
-    root="data",
-    train=False,
-    download=True,
-    transform=ToTensor(),
-    target_transform=None
-)
+@gin.configurable
+def get_dataset(name='CIFAR100', train=True, transform_config=None):
+    dataset_classes = {
+        'CIFAR100': datasets.CIFAR100
+    }
+    transform = get_transform(**transform_config) if transform_config else None
+    dataset = dataset_classes[name](root='./data', train=train, download=True, transform=transform)
+    return dataset
 
 # DataLoaders
 
-train_dataloader_flat = DataLoader(dataset=train_data_flat,
-                                   batch_size=BATCH_SIZE,
-                                   shuffle=True)
-
-train_dataloader_flat_augment = DataLoader(dataset=train_data_flat_augment,
-                                           batch_size=BATCH_SIZE,
-                                           shuffle=True)
-
-train_dataloader_std_img = DataLoader(dataset=train_data_std_img,
-                                      batch_size=BATCH_SIZE,
-                                      shuffle=True)
-
-train_dataloader_std_img_augment = DataLoader(train_data_std_img_augment,
-                                              batch_size=BATCH_SIZE,
-                                              shuffle=True)
-
-test_dataloader_flat = DataLoader(dataset=test_data_flat,
-                                  batch_size=BATCH_SIZE,
-                                  shuffle=False)
-
-test_dataloader_std_img = DataLoader(dataset=test_data_std_img,
-                                     batch_size=BATCH_SIZE,
-                                     shuffle=False)
+@gin.configurable
+def get_dataloader(dataset, batch_size=32, shuffle=True, num_workers=4):
+    return DataLoader(dataset, batch_size=batch_size, shuffle=shuffle, num_workers=num_workers)
