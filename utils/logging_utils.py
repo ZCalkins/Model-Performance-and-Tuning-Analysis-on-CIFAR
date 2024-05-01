@@ -1,11 +1,6 @@
 import os
 from datetime import datetime
 from torch.utils.tensorboard import SummaryWriter
-import yaml
-
-def load_config(config_path='configurations/yaml/logging_config.yaml'):
-    with open(config_path, 'r') as file:
-        return yaml.safe_load(file)
 
 def create_writer(experiment_name: str, model_name: str, extra: str=None) -> SummaryWriter:
     config = load_config()
