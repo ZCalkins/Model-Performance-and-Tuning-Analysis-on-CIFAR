@@ -93,9 +93,9 @@ cnn_model.CNNModelConfig.base() = {
     }
 ]}
 
-# Ablation 1: Varying the dropout rate
-cnn_model.CNNModelConfig.dropout_ablation() = {
-    'layers': [
+# Dropout Ablation
+
+dropout_variation/CNNModelConfig.layers = [
     {
         'in_channels': 3,
         'out_channels': 32,
@@ -182,14 +182,10 @@ cnn_model.CNNModelConfig.dropout_ablation() = {
     }
 ]}
 
-# Ablation 2: Testing a different optimizer and learning rate
-cnn_model.CNNModelConfig.optimizer_ablation() = {
-    'optimizer': 'sgd',
-    'learning_rate': 0.01
-}
+# Optimizer Ablation
+optimizer_variation/CNNModelConfig.optimizer = 'sgd'
+optimizer_variation/CNNModelConfig.learning_rate = 0.01
 
-# Ablation 3: Testing larger batch and epoch size
-cnn_model.CNNModelConfig.batch_ablation() = {
-    'batch_size': 64,
-    'num_epochs': 20
-}
+# Batch and Epoch Ablation
+batch_epoch_variation/CNNModelConfig.batch_size = 64
+batch_epoch_variation/CNNModelConfig.num_epochs = 20
