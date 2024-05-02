@@ -1,7 +1,5 @@
 from models import gated_mlp_model
 
-# Base configuration for the GMLP model
-
 models.gmlp_model.GatedMLPModelConfig.base() = {
     'model_name': 'GMLP_Baseline',
     'input_dim': 3072,
@@ -21,7 +19,7 @@ models.gmlp_model.GatedMLPModelConfig.base() = {
     'num_epochs': 10
 }
 
-# Ablation configuration for different dropout rates using scope
+# Dropout Ablation
 
 dropout_variation/models.gmlp_model.GatedMLPModelConfig.dropout_rate = 0.2
 dropout_variation/models.gmlp_model.GatedMLPModelConfig.layers = [
@@ -34,7 +32,12 @@ dropout_variation/models.gmlp_model.GatedMLPModelConfig.layers = [
     GatedMLPLayerConfig(256, 100, use_gate=True, dropout_rate=0.5)
     ],
 
-# Ablation configuration for different optimizers using scope
+# Optimizer Ablation
 
 optimizer_variation/models.gmlp_model.GatedMLPModelConfig.optimizer = 'sgd'
 optimizer_variation/models.gmlp_model.GatedMLPModelConfig.learning_rate = 0.01
+
+# Batch and Epoch Ablation
+
+batch_variation/models.gmlp_model.GatedMLPModelConfig.batch_size = 64
+batch_variation/models.gmlp_model.GatedMLPModelConfig.num_epochs = 20
