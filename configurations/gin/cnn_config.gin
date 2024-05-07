@@ -1,9 +1,15 @@
+import torch.nn as nn
+import torch.optim as optim
+import torch.optim.lr_scheduler as lr_scheduler
 from models import cnn_model
 
 cnn_model.CNNModelConfig.base() = {
     'model_name': 'CNN_Baseline',
     'optimizer': 'adam',
     'learning_rate': 0.001,
+    'loss_function': nn.CrossEntropyLoss(),
+    'loss_params': {'label_smoothing': 0.0},
+    'scheduler': None, 
     'batch_size': 32,
     'num_epochs': 10,
     'layers':[
@@ -16,10 +22,7 @@ cnn_model.CNNModelConfig.base() = {
         'use_batch_norm': True,
         'use_pool': False,
         'pool_size': 2,
-        'pool_stride': 2,
-        'pool_type': 'max',
-        'use_dropout': False,
-        'dropout_rate': 0.0
+        'pool_stride': 2
     },
     {
         'in_channels': 32,
@@ -30,10 +33,7 @@ cnn_model.CNNModelConfig.base() = {
         'use_batch_norm': True,
         'use_pool': True,
         'pool_size': 2,
-        'pool_stride': 2,
-        'pool_type': 'max',
-        'use_dropout': True,
-        'dropout_rate': 0.1
+        'pool_stride': 2
     },
     {
         'in_channels': 32,
@@ -44,10 +44,7 @@ cnn_model.CNNModelConfig.base() = {
         'use_batch_norm': True,
         'use_pool': False,
         'pool_size': 2,
-        'pool_stride': 2,
-        'pool_type': 'max',
-        'use_dropout': True,
-        'dropout_rate': 0.2
+        'pool_stride': 2
     },
     {
         'in_channels': 32,
@@ -58,24 +55,18 @@ cnn_model.CNNModelConfig.base() = {
         'use_batch_norm': True,
         'use_pool': True,
         'pool_size': 2,
-        'pool_stride': 2,
-        'pool_type': 'max',
-        'use_dropout': True,
-        'dropout_rate': 0.3
+        'pool_stride': 2
     },
     {
         'in_channels': 64,
         'out_channels': 64,
-        'kernel_size': 7,
+        'kernel_size': 5,
         'stride': 1,
         'padding': 1,
         'use_batch_norm': True,
         'use_pool': False,
         'pool_size': 2,
-        'pool_stride': 2,
-        'pool_type': 'max',
-        'use_dropout': True,
-        'dropout_rate': 0.4
+        'pool_stride': 2
     },
     {
         'in_channels': 64,
@@ -86,10 +77,7 @@ cnn_model.CNNModelConfig.base() = {
         'use_batch_norm': True,
         'use_pool': False,
         'pool_size': 2,
-        'pool_stride': 2,
-        'pool_type': 'max',
-        'use_dropout': True,
-        'dropout_rate': 0.5
+        'pool_stride': 2
     }
 ]}
 
@@ -106,8 +94,7 @@ dropout_variation/CNNModelConfig.layers = [
         'use_pool': False,
         'pool_size': 2,
         'pool_stride': 2,
-        'pool_type': 'max',
-        'use_dropout': False,
+        'use_dropout': True,
         'dropout_rate': 0.2
     },
     {
@@ -120,9 +107,8 @@ dropout_variation/CNNModelConfig.layers = [
         'use_pool': True,
         'pool_size': 2,
         'pool_stride': 2,
-        'pool_type': 'max',
         'use_dropout': True,
-        'dropout_rate': 0.3
+        'dropout_rate': 0.2
     },
     {
         'in_channels': 32,
@@ -134,9 +120,8 @@ dropout_variation/CNNModelConfig.layers = [
         'use_pool': False,
         'pool_size': 2,
         'pool_stride': 2,
-        'pool_type': 'max',
         'use_dropout': True,
-        'dropout_rate': 0.4
+        'dropout_rate': 0.2
     },
     {
         'in_channels': 32,
@@ -148,23 +133,21 @@ dropout_variation/CNNModelConfig.layers = [
         'use_pool': True,
         'pool_size': 2,
         'pool_stride': 2,
-        'pool_type': 'max',
         'use_dropout': True,
-        'dropout_rate': 0.5
+        'dropout_rate': 0.3
     },
     {
         'in_channels': 64,
         'out_channels': 64,
-        'kernel_size': 7,
+        'kernel_size': 5,
         'stride': 1,
         'padding': 1,
         'use_batch_norm': True,
         'use_pool': False,
         'pool_size': 2,
         'pool_stride': 2,
-        'pool_type': 'max',
         'use_dropout': True,
-        'dropout_rate': 0.6
+        'dropout_rate': 0.4
     },
     {
         'in_channels': 64,
@@ -176,16 +159,101 @@ dropout_variation/CNNModelConfig.layers = [
         'use_pool': False,
         'pool_size': 2,
         'pool_stride': 2,
-        'pool_type': 'max',
         'use_dropout': True,
-        'dropout_rate': 0.7
+        'dropout_rate': 0.5
+    }
+]}
+
+# Pooling Ablation
+pooling_variation/CNNModelConfig.pool_type = 
+    {
+        'in_channels': 3,
+        'out_channels': 32,
+        'kernel_size': 3,
+        'stride': 1,
+        'padding': 1,
+        'use_batch_norm': True,
+        'use_pool': False,
+        'pool_size': 2,
+        'pool_stride': 2,
+        'pool_type': 'average'
+    },
+    {
+        'in_channels': 32,
+        'out_channels': 32,
+        'kernel_size': 3,
+        'stride': 1,
+        'padding': 1,
+        'use_batch_norm': True,
+        'use_pool': True,
+        'pool_size': 2,
+        'pool_stride': 2,
+        'pool_type': 'average'
+    },
+    {
+        'in_channels': 32,
+        'out_channels': 32,
+        'kernel_size': 3,
+        'stride': 1,
+        'padding': 1,
+        'use_batch_norm': True,
+        'use_pool': False,
+        'pool_size': 2,
+        'pool_stride': 2,
+        'pool_type': 'average'
+    },
+    {
+        'in_channels': 32,
+        'out_channels': 64,
+        'kernel_size': 5,
+        'stride': 1,
+        'padding': 1,
+        'use_batch_norm': True,
+        'use_pool': True,
+        'pool_size': 2,
+        'pool_stride': 2,
+        'pool_type': 'average'
+    },
+    {
+        'in_channels': 64,
+        'out_channels': 64,
+        'kernel_size': 5,
+        'stride': 1,
+        'padding': 1,
+        'use_batch_norm': True,
+        'use_pool': False,
+        'pool_size': 2,
+        'pool_stride': 2,
+        'pool_type': 'average'
+    },
+    {
+        'in_channels': 64,
+        'out_channels': 100,
+        'kernel_size': 7,
+        'stride': 1,
+        'padding': 1,
+        'use_batch_norm': True,
+        'use_pool': True,
+        'pool_size': 2,
+        'pool_stride': 2,
+        'pool_type': 'average'
     }
 ]}
 
 # Optimizer Ablation
 optimizer_variation/CNNModelConfig.optimizer = 'sgd'
-optimizer_variation/CNNModelConfig.learning_rate = 0.01
+optimizer_variation/CNNModelConfig.learning_rate = 0.001
 
-# Batch and Epoch Ablation
-batch_epoch_variation/CNNModelConfig.batch_size = 64
-batch_epoch_variation/CNNModelConfig.num_epochs = 20
+# Batch Ablation
+batch_variation/CNNModelConfig.batch_size = 64
+
+# Epoch Ablation
+epoch_variation/CNNModelConfig.num_epochs = 20
+
+# Cosine Annealing Ablation
+cosine_annealing_variation/CNNModelConfig.scheduler = lr_scheduler.CosineAnnealingLR()
+cosine_annealing_variation/CNNModelConfig.scheduler_params = {'T_max': 10}
+
+# Label Smoothing Ablation
+label_smoothing_variation/CNNModelConfig.loss_function = nn.CrossEntropyLoss()
+label_smoothing_variation/CNNModelConfig.loss_params = {'label_smoothing': 0.1}
