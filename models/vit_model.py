@@ -12,8 +12,10 @@ class ViTLayerConfig:
     num_heads: int
     head_dim: int
     mlp_dim: int
-    dropout_rate: float
-    attention_dropout_rate: float
+    use_dropout: bool = False
+    dropout_rate: Optional[float] = 0.0
+    use_attention_dropout: bool = False
+    attention_dropout_rate: Optional[float] = 0.0
     use_layer_norm: bool = True
     layer_norm_eps: Optional[float] = 1e-6
 
@@ -29,8 +31,6 @@ class ViTModelConfig:
     num_heads: int
     mlp_dim: int
     num_classes: int
-    dropout_rate: float
-    attention_dropout_rate: float
     optimizer: str = 'adam'
     learning_rate: float = 0.001
 
@@ -61,12 +61,11 @@ class ViTModel(nn.Module):
             d_model=config.hidden_dim,
             nhead=config.num_heads,
             dim_feedforward=config.mlp_dim,
-            dropout=config.dropout_rate,
+            dropout=config.dropout_rate if config.use_dropout else 0.0,
             activation='gelu'
         )
         self.encoder = TransformerEncoder(encoder_layer, config.num_layers)
         self.head = nn.Linear(config.hidden_dim, config.num_classes)
-        self.dropout = nn.Dropout(config.dropout_rate)
         self.apply(self._init_weights)
 
     def _init_weights(self, module):
@@ -87,5 +86,7 @@ class ViTModel(nn.Module):
         x += self.pos_embed
         x = self.encoder(x)
         x = x[:, 0]
+        if self.config.use_dropout:
+            x = F.dropout(x, p=self.config.dropout_rate, training=self.training)
         x = self.head(x)
         return x
