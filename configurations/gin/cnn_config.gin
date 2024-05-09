@@ -44,6 +44,18 @@ cnn_model.CNNModelConfig.base() = {
         'use_batch_norm': True,
         'use_pool': True,
         'pool_size': 2,
+        'pool_stride': 2,
+        'pool_type': 'max'
+    },
+    {
+        'in_channels': 32,
+        'out_channels': 32,
+        'kernel_size': 3,
+        'stride': 1,
+        'padding': 1,
+        'use_batch_norm': True,
+        'use_pool': False,
+        'pool_size': 2,
         'pool_stride': 2
     },
     {
@@ -59,52 +71,20 @@ cnn_model.CNNModelConfig.base() = {
     },
     {
         'in_channels': 32,
-        'out_channels': 64,
-        'kernel_size': 5,
-        'stride': 1,
-        'padding': 1,
-        'use_batch_norm': True,
-        'use_pool': False,
-        'pool_size': 2,
-        'pool_stride': 2
-    },
-    {
-        'in_channels': 64,
-        'out_channels': 64,
-        'kernel_size': 5,
-        'stride': 1,
-        'padding': 1,
-        'use_batch_norm': True,
-        'use_pool': False,
-        'pool_size': 2,
-        'pool_stride': 2
-    }
-    {
-        'in_channels': 64,
-        'out_channels': 64,
-        'kernel_size': 5,
-        'stride': 1,
-        'padding': 1,
-        'use_batch_norm': True,
-        'use_pool': False,
-        'pool_size': 2,
-        'pool_stride': 2
-    }
-    {
-        'in_channels': 64,
-        'out_channels': 64,
-        'kernel_size': 5,
+        'out_channels': 32,
+        'kernel_size': 3,
         'stride': 1,
         'padding': 1,
         'use_batch_norm': True,
         'use_pool': True,
         'pool_size': 2,
-        'pool_stride': 2
+        'pool_stride': 2,
+        'pool_type': 'max'
     }
     {
-        'in_channels': 64,
+        'in_channels': 32,
         'out_channels': 64,
-        'kernel_size': 5,
+        'kernel_size': 3,
         'stride': 1,
         'padding': 1,
         'use_batch_norm': True,
@@ -115,7 +95,7 @@ cnn_model.CNNModelConfig.base() = {
     {
         'in_channels': 64,
         'out_channels': 64,
-        'kernel_size': 5,
+        'kernel_size': 3,
         'stride': 1,
         'padding': 1,
         'use_batch_norm': True,
@@ -126,7 +106,30 @@ cnn_model.CNNModelConfig.base() = {
     {
         'in_channels': 64,
         'out_channels': 64,
-        'kernel_size': 5,
+        'kernel_size': 3,
+        'stride': 1,
+        'padding': 1,
+        'use_batch_norm': True,
+        'use_pool': True,
+        'pool_size': 2,
+        'pool_stride': 2,
+        'pool_type': 'max'
+    }
+    {
+        'in_channels': 64,
+        'out_channels': 64,
+        'kernel_size': 3,
+        'stride': 1,
+        'padding': 1,
+        'use_batch_norm': True,
+        'use_pool': False,
+        'pool_size': 2,
+        'pool_stride': 2
+    }
+    {
+        'in_channels': 64,
+        'out_channels': 64,
+        'kernel_size': 3,
         'stride': 1,
         'padding': 1,
         'use_batch_norm': True,
@@ -137,20 +140,21 @@ cnn_model.CNNModelConfig.base() = {
     {
         'in_channels': 64,
         'out_channels': 100,
-        'kernel_size': 7,
+        'kernel_size': 3,
         'stride': 1,
         'padding': 1,
         'use_batch_norm': True,
-        'use_pool': False,
+        'use_pool': True,
         'pool_size': 2,
         'pool_stride': 2
+        'pool_type': 'max'
     }
 ]}
 
 # Dropout Ablation
 
 dropout_variation/CNNModelConfig.layers = [
-    {
+        {
         'in_channels': 3,
         'out_channels': 32,
         'kernel_size': 3,
@@ -170,7 +174,34 @@ dropout_variation/CNNModelConfig.layers = [
         'stride': 1,
         'padding': 1,
         'use_batch_norm': True,
+        'use_pool': False,
+        'pool_size': 2,
+        'pool_stride': 2,
+        'use_dropout': True,
+        'dropout_rate': 0.2
+    },
+    {
+        'in_channels': 32,
+        'out_channels': 32,
+        'kernel_size': 3,
+        'stride': 1,
+        'padding': 1,
+        'use_batch_norm': True,
         'use_pool': True,
+        'pool_size': 2,
+        'pool_stride': 2,
+        'pool_type': 'max',
+        'use_dropout': True,
+        'dropout_rate': 0.2
+    },
+    {
+        'in_channels': 32,
+        'out_channels': 32,
+        'kernel_size': 3,
+        'stride': 1,
+        'padding': 1,
+        'use_batch_norm': True,
+        'use_pool': False,
         'pool_size': 2,
         'pool_stride': 2,
         'use_dropout': True,
@@ -191,21 +222,35 @@ dropout_variation/CNNModelConfig.layers = [
     },
     {
         'in_channels': 32,
-        'out_channels': 64,
-        'kernel_size': 5,
+        'out_channels': 32,
+        'kernel_size': 3,
         'stride': 1,
         'padding': 1,
         'use_batch_norm': True,
         'use_pool': True,
         'pool_size': 2,
         'pool_stride': 2,
+        'pool_type': 'max',
         'use_dropout': True,
         'dropout_rate': 0.2
-    },
+    }
+    {
+        'in_channels': 32,
+        'out_channels': 64,
+        'kernel_size': 3,
+        'stride': 1,
+        'padding': 1,
+        'use_batch_norm': True,
+        'use_pool': False,
+        'pool_size': 2,
+        'pool_stride': 2,
+        'use_dropout': True,
+        'dropout_rate': 0.2
+    }
     {
         'in_channels': 64,
         'out_channels': 64,
-        'kernel_size': 5,
+        'kernel_size': 3,
         'stride': 1,
         'padding': 1,
         'use_batch_norm': True,
@@ -214,114 +259,65 @@ dropout_variation/CNNModelConfig.layers = [
         'pool_stride': 2,
         'use_dropout': True,
         'dropout_rate': 0.2
-    },
+    }
+    {
+        'in_channels': 64,
+        'out_channels': 64,
+        'kernel_size': 3,
+        'stride': 1,
+        'padding': 1,
+        'use_batch_norm': True,
+        'use_pool': True,
+        'pool_size': 2,
+        'pool_stride': 2,
+        'pool_type': 'max',
+        'use_dropout': True,
+        'dropout_rate': 0.2
+    }
+    {
+        'in_channels': 64,
+        'out_channels': 64,
+        'kernel_size': 3,
+        'stride': 1,
+        'padding': 1,
+        'use_batch_norm': True,
+        'use_pool': False,
+        'pool_size': 2,
+        'pool_stride': 2,
+        'use_dropout': True,
+        'dropout_rate': 0.2
+    }
+    {
+        'in_channels': 64,
+        'out_channels': 64,
+        'kernel_size': 3,
+        'stride': 1,
+        'padding': 1,
+        'use_batch_norm': True,
+        'use_pool': False,
+        'pool_size': 2,
+        'pool_stride': 2,
+        'use_dropout': True,
+        'dropout_rate': 0.2
+    }
     {
         'in_channels': 64,
         'out_channels': 100,
-        'kernel_size': 7,
+        'kernel_size': 3,
         'stride': 1,
         'padding': 1,
         'use_batch_norm': True,
-        'use_pool': False,
+        'use_pool': True,
         'pool_size': 2,
-        'pool_stride': 2,
-        'use_dropout': True,
-        'dropout_rate': 0.2
-    }
-{
-        'in_channels': 64,
-        'out_channels': 100,
-        'kernel_size': 7,
-        'stride': 1,
-        'padding': 1,
-        'use_batch_norm': True,
-        'use_pool': False,
-        'pool_size': 2,
-        'pool_stride': 2,
-        'use_dropout': True,
-        'dropout_rate': 0.2
-    }
-{
-        'in_channels': 64,
-        'out_channels': 100,
-        'kernel_size': 7,
-        'stride': 1,
-        'padding': 1,
-        'use_batch_norm': True,
-        'use_pool': False,
-        'pool_size': 2,
-        'pool_stride': 2,
-        'use_dropout': True,
-        'dropout_rate': 0.2
-    }
-{
-        'in_channels': 64,
-        'out_channels': 100,
-        'kernel_size': 7,
-        'stride': 1,
-        'padding': 1,
-        'use_batch_norm': True,
-        'use_pool': False,
-        'pool_size': 2,
-        'pool_stride': 2,
-        'use_dropout': True,
-        'dropout_rate': 0.2
-    }
-{
-        'in_channels': 64,
-        'out_channels': 100,
-        'kernel_size': 7,
-        'stride': 1,
-        'padding': 1,
-        'use_batch_norm': True,
-        'use_pool': False,
-        'pool_size': 2,
-        'pool_stride': 2,
-        'use_dropout': True,
-        'dropout_rate': 0.2
-    }
-{
-        'in_channels': 64,
-        'out_channels': 100,
-        'kernel_size': 7,
-        'stride': 1,
-        'padding': 1,
-        'use_batch_norm': True,
-        'use_pool': False,
-        'pool_size': 2,
-        'pool_stride': 2,
-        'use_dropout': True,
-        'dropout_rate': 0.2
-    }
-{
-        'in_channels': 64,
-        'out_channels': 100,
-        'kernel_size': 7,
-        'stride': 1,
-        'padding': 1,
-        'use_batch_norm': True,
-        'use_pool': False,
-        'pool_size': 2,
-        'pool_stride': 2,
-        'use_dropout': True,
-        'dropout_rate': 0.2
-    }
-{
-        'in_channels': 64,
-        'out_channels': 100,
-        'kernel_size': 7,
-        'stride': 1,
-        'padding': 1,
-        'use_batch_norm': True,
-        'use_pool': False,
-        'pool_size': 2,
-        'pool_stride': 2,
+        'pool_stride': 2
+        'pool_type': 'max',
         'use_dropout': True,
         'dropout_rate': 0.2
     }
 ]}
 
 # Pooling Ablation
+
 pooling_variation/CNNModelConfig.pool_type = 
     {
         'in_channels': 3,
@@ -332,8 +328,18 @@ pooling_variation/CNNModelConfig.pool_type =
         'use_batch_norm': True,
         'use_pool': False,
         'pool_size': 2,
-        'pool_stride': 2,
-        'pool_type': 'average'
+        'pool_stride': 2
+    },
+    {
+        'in_channels': 32,
+        'out_channels': 32,
+        'kernel_size': 3,
+        'stride': 1,
+        'padding': 1,
+        'use_batch_norm': True,
+        'use_pool': False,
+        'pool_size': 2,
+        'pool_stride': 2
     },
     {
         'in_channels': 32,
@@ -356,13 +362,23 @@ pooling_variation/CNNModelConfig.pool_type =
         'use_batch_norm': True,
         'use_pool': False,
         'pool_size': 2,
-        'pool_stride': 2,
-        'pool_type': 'average'
+        'pool_stride': 2
     },
     {
         'in_channels': 32,
-        'out_channels': 64,
-        'kernel_size': 5,
+        'out_channels': 32,
+        'kernel_size': 3,
+        'stride': 1,
+        'padding': 1,
+        'use_batch_norm': True,
+        'use_pool': False,
+        'pool_size': 2,
+        'pool_stride': 2
+    },
+    {
+        'in_channels': 32,
+        'out_channels': 32,
+        'kernel_size': 3,
         'stride': 1,
         'padding': 1,
         'use_batch_norm': True,
@@ -370,29 +386,73 @@ pooling_variation/CNNModelConfig.pool_type =
         'pool_size': 2,
         'pool_stride': 2,
         'pool_type': 'average'
-    },
+    }
+    {
+        'in_channels': 32,
+        'out_channels': 64,
+        'kernel_size': 3,
+        'stride': 1,
+        'padding': 1,
+        'use_batch_norm': True,
+        'use_pool': False,
+        'pool_size': 2,
+        'pool_stride': 2
+    }
     {
         'in_channels': 64,
         'out_channels': 64,
-        'kernel_size': 5,
+        'kernel_size': 3,
         'stride': 1,
         'padding': 1,
         'use_batch_norm': True,
         'use_pool': False,
         'pool_size': 2,
+        'pool_stride': 2
+    }
+    {
+        'in_channels': 64,
+        'out_channels': 64,
+        'kernel_size': 3,
+        'stride': 1,
+        'padding': 1,
+        'use_batch_norm': True,
+        'use_pool': True,
+        'pool_size': 2,
         'pool_stride': 2,
         'pool_type': 'average'
-    },
+    }
+    {
+        'in_channels': 64,
+        'out_channels': 64,
+        'kernel_size': 3,
+        'stride': 1,
+        'padding': 1,
+        'use_batch_norm': True,
+        'use_pool': False,
+        'pool_size': 2,
+        'pool_stride': 2
+    }
+    {
+        'in_channels': 64,
+        'out_channels': 64,
+        'kernel_size': 3,
+        'stride': 1,
+        'padding': 1,
+        'use_batch_norm': True,
+        'use_pool': False,
+        'pool_size': 2,
+        'pool_stride': 2
+    }
     {
         'in_channels': 64,
         'out_channels': 100,
-        'kernel_size': 7,
+        'kernel_size': 3,
         'stride': 1,
         'padding': 1,
         'use_batch_norm': True,
         'use_pool': True,
         'pool_size': 2,
-        'pool_stride': 2,
+        'pool_stride': 2
         'pool_type': 'average'
     }
 ]}
