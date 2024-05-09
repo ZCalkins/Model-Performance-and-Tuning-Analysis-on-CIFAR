@@ -49,7 +49,12 @@ class CNNModel(nn.Module):
                 self.layers.add_module(f"batch_norm{idx}", nn.BatchNorm2d(layer_config.out_channels))
             self.layers.add_module(f"activation{idx}", nn.SiLU())
             if layer_config.use_pool:
-                pool = nn.MaxPool2d if layer_config.pool_type == 'max' else nn.AvgPool2d
+                if layer_config.pool_type == 'max':
+                    pool = nn.MaxPool2d(kernel_size=layer_config.pool_size, stride=layer_config.pool_stride)
+                elif layer_config.pool_type == 'average':
+                    pool = nn.AvgPool2d(kernel_size=layer_config.pool_size, stride=layer_config.pool_stride)
+                else:
+                    raise ValueError(f"Unsupported pool type {layer_config.pool_type}")
                 self.layers.add_module(f"pool{idx}", pool(kernel_size=layer_config.pool_size, stride=layer_config.pool_stride))
             if layer_config.use_dropout:
                 self.layers.add_module(f"dropout{idx}", nn.Dropout(layer_config.dropout_rate))
