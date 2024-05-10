@@ -51,7 +51,7 @@ class CustomTransformerEncoderLayer(nn.Module):
 
     def forward(self, src):
         src2 = self.norm1(src)
-        attn_output, _ = self.self_attn(src2, src2, src2)  # Self attention
+        attn_output, _ = self.self_attn(src2, src2, src2)
         src = src + self.dropout1(attn_output)
         src2 = self.norm2(src)
         src2 = self.linear2(self.dropout(self.activation(self.linear1(src2))))
@@ -113,6 +113,6 @@ class ViTModel(nn.Module):
         x = torch.cat((cls_tokens, x), dim=1) + self.pos_embed
         for layer in self.encoder:
             x = layer(x)
-        x = x[:, 0]  # Get the output of the CLS token
+        x = x[:, 0]
         x = self.head(x)
         return x
