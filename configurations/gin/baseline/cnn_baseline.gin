@@ -1,1 +1,19 @@
+import torch.nn as nn
+import torch.optim as optim
+from models import cnn_model
 
+# Set up the baseline configuration for the CNN
+cnn_model.CNNModelConfig.base() = {
+    'model_name': 'CNN_Baseline',
+    'optimizer': 'adam',
+    'learning_rate': 0.001,
+    'loss_function': nn.CrossEntropyLoss(),
+    'scheduler': None,
+    'batch_size': 32,
+    'num_epochs': 10,
+    'layers': [
+        {'in_channels': 3, 'out_channels': 32, 'kernel_size': 3, 'stride': 1, 'padding': 1, 'use_batch_norm': True, 'use_pool': True, 'pool_size': 2, 'pool_stride': 2},
+        {'in_channels': 32, 'out_channels': 64, 'kernel_size': 3, 'stride': 1, 'padding': 1, 'use_batch_norm': True, 'use_pool': True, 'pool_size': 2, 'pool_stride': 2},
+        {'in_channels': 64, 'out_channels': 100, 'kernel_size': 3, 'stride': 1, 'padding': 1, 'use_batch_norm': True, 'use_pool': True, 'pool_size': 2, 'pool_stride': 2}
+    ]
+}
