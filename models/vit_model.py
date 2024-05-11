@@ -80,5 +80,5 @@ class ViTModel(nn.Module):
         x = x + self.pos_embed
         for layer in self.layers:
             x = layer(x)
-        x = self.head(x[:, 0]) # class tokens are used
+        x = self.head(x[:, 0])
         return x
