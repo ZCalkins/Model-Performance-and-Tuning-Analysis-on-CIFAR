@@ -1,8 +1,9 @@
 import gin
 from dataclasses import dataclass, field
-from typing import List, Tuple, Optional
+from typing import Any, Dict, List, Optional, Tuple
 import torch
 from torch import nn
+import importlib
 
 @gin.configurable
 @dataclass
@@ -19,6 +20,9 @@ class CNNLayerConfig:
     pool_type: Optional[str] = 'max'
     use_dropout: bool = False
     dropout_rate: Optional[float] = 0.0
+    activation: str = 'ReLU'
+    norm_layer: Optional[str] = None
+    norm_params: Dict[str, Any] = field(default_factory=dict)
 
 @gin.configurable
 @dataclass
@@ -27,8 +31,10 @@ class CNNModelConfig:
     layers: List[CNNLayerConfig] = field(default_factory=list)
     input_shape: Tuple[int, int, int] = (3, 32, 32)
     output_shape: int = 100
-    optimizer: str = 'adam'
-    learning_rate: float = 0.001
+    optimizer_class: str = 'adam'
+    optimizer_params: Dict[str, Any] = field(default_factory=lambda: {'lr': 0.001})
+    scheduler_class: Optional[str] = None
+    scheduler_params: Dict[str, Any] = field(default_factory=dict)
     batch_size: int = 32
     num_epochs: int = 10
 
@@ -36,29 +42,59 @@ class CNNModelConfig:
 class CNNModel(nn.Module):
     def __init__(self, config: CNNModelConfig):
         super().__init__()
+        self.config = config
         self.layers = nn.Sequential()
+        
         for idx, layer_config in enumerate(config.layers):
-            self.layers.add_module(f"conv{idx}", nn.Conv2d(
+            modules = []
+            
+            # Convolutional layers
+            conv_layer = nn.Conv2d(
                 in_channels=layer_config.in_channels,
                 out_channels=layer_config.out_channels,
                 kernel_size=layer_config.kernel_size,
                 stride=layer_config.stride,
                 padding=layer_config.padding
-            ))
+            )
+            modules.append(conv_layer)
+            
+            # Optional Batch Normalization
             if layer_config.use_batch_norm:
-                self.layers.add_module(f"batch_norm{idx}", nn.BatchNorm2d(layer_config.out_channels))
-            self.layers.add_module(f"activation{idx}", nn.SiLU())
-            if layer_config.use_pool:
-                if layer_config.pool_type == 'max':
-                    pool = nn.MaxPool2d(kernel_size=layer_config.pool_size, stride=layer_config.pool_stride)
-                elif layer_config.pool_type == 'average':
-                    pool = nn.AvgPool2d(kernel_size=layer_config.pool_size, stride=layer_config.pool_stride)
-                else:
-                    raise ValueError(f"Unsupported pool type {layer_config.pool_type}")
-                self.layers.add_module(f"pool{idx}", pool(kernel_size=layer_config.pool_size, stride=layer_config.pool_stride))
+                batch_norm = nn.BatchNorm2d(layer_config.out_channels)
+                modules.append(batch_norm)
+
+            # Optional Activation Function
+            if layer_config.activation:
+                act_module = importlib.import_module('torch.nn')
+                ActivationFunction = getattr(act_module, layer_config.activation)
+                activation = ActivationFunction()
+                modules.append(activation)
+            
+            # Optional Pooling
+            if layer_config.use_pool and layer_config.pool_type:
+                pool_module = importlib.import_module('torch.nn')
+                PoolClass = getattr(pool_module, layer_config.pool_type)
+                pool = PoolClass(**layer_config.pool_params)
+                modules.append(pool)
+            
+            # Optional Dropout
             if layer_config.use_dropout:
-                self.layers.add_module(f"dropout{idx}", nn.Dropout(layer_config.dropout_rate))
+                dropout = nn.Dropout(layer_config.dropout_rate)
+                modules.append(dropout)
+            
+            # Optional normalization layer
+            if layer_config.norm_layer:
+                norm_module = importlib.import_module('torch.nn')
+                NormLayer = getattr(norm_module, layer_config.norm_layer)
+                norm_layer = NormLayer(**layer_config.norm_params)
+                modules.append(norm_layer)
+
+            # Append the configured sub-layer (block of layers) to the main layer stack
+            self.layers.add_module(f"block_{idx}", nn.Sequential(*modules))
+
+        # Classifier
         self.classifier = nn.Sequential(
+            nn.AdaptiveAvgPool2d((1, 1)),  # Global average pooling
             nn.Flatten(),
             nn.LazyLinear(config.output_shape)
         )
