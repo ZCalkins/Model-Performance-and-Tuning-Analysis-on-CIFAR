@@ -2,8 +2,3 @@ general:
   device: "cuda" if torch.cuda.is_available() else "cpu"
   seed: 42
   num_workers: 4
-
-model_params:
-  input_shape: [3, 32, 32]
-  output_shape: 100
-
