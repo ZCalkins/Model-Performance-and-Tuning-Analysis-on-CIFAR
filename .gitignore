@@ -1,2 +1,16 @@
 # ignore all files in the logs directory
 /logs/
+
+# Ignore data directory
+data/
+
+# Ignore Python bytecode files
+__pycache__/
+*.pyc
+
+# Ignore virtual environment directories
+venv/
+env/
+
+# Ignore Jupyter notebook checkpoints
+.ipynb_checkpoints/
