@@ -38,7 +38,7 @@ def get_dataset(name='CIFAR100', train=True, transform_config=None):
         'CIFAR100': datasets.CIFAR100
     }
     transform = create_transform(**transform_config) if transform_config else None
-    dataset = dataset_classes[name](root='data', train=train, download=True, transform=transform)
+    dataset = dataset_classes[name](root='data/cifar100', train=train, download=True, transform=transform)
     return dataset
 
 # DataLoaders
