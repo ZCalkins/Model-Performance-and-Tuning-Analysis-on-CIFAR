@@ -1,9 +1,42 @@
 import torch
 from torch import nn, optim
-from torch.utils.data import DataLoader
+import pytorch_lightning as pl
 import optuna
 from models.cnn_model import CNNModel, CNNModelConfig, CNNLayerConfig
 from utils.data_loading import get_dataset, get_dataloader
+
+class LitCNNModel(pl.LightningModule):
+    def __init__(self, config: CNNModelConfig):
+        super().__init__()
+        self.model = CNNModel(config)
+        self.config = config
+        self.loss_fn = nn.CrossEntropyLoss()
+
+    def forward(self, x):
+        return self.model(x)
+
+    def training_step(self, batch, batch_idx):
+        x, y = batch
+        logits = self(x)
+        loss = self.criterion(logits, y)
+        self.log('train_loss', loss)
+        return loss
+
+    def validation_step(self, batch, batch_idx):
+        x, y = batch
+        logits = self(x)
+        loss = self.criterion(logits, y)
+        acc = (logits.argmax(dim=-1) == y).float().mean()
+        self.log('val_loss', loss, prog_bar=True)
+        self.log('val_acc', acc, prog_bar=True)
+        return loss
+
+    def configure_optimizers(self):
+        if self.config.optimizer_class == 'Adam':
+            optimizer = torch.optim.Adam(self.parameters(), **self.config.optimizer_params)
+        elif self.config.optimizer_class == 'SGD':
+            optimizer = torch.optim.SGD(self.parameters(), **self.config.optimizer_params)
+        return optimizer
 
 def create_cnn_config(trial):
   num_layers = trial.suggest_int('num_layers', 3, 12) # testing 3 to 12 layers
