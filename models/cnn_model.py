@@ -37,6 +37,7 @@ class CNNModelConfig:
     scheduler_params: Dict[str, Any] = field(default_factory=dict)
     batch_size: int = 32
     num_epochs: int = 10
+    label_smoothing: float = 0.0
 
 @gin.configurable
 class CNNModel(nn.Module):
