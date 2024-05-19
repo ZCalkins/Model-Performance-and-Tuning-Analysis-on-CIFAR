@@ -135,7 +135,7 @@ def create_cnn_config(trial):
         optimizer_params=optimizer_params,
         batch_size=trial.suggest_int('batch_size', 32, 128, step=16),
         num_epochs=trial.suggest_int('num_epochs', 10, 50),
-        label_smoothing=label_smoothing  # Pass the label_smoothing parameter here
+        label_smoothing=label_smoothing
     )
 
     return cnn_config
