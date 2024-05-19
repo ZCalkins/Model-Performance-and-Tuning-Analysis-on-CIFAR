@@ -19,6 +19,9 @@ device = torch.device(config['general']['device'])
 seed = config['general']['seed']
 num_workers = config['general']['num_workers']
 
+# Create transform
+transform = create_transform(transform_type='standard', size=224, normalize=True, flatten=False)
+
 # Set the random seed for reproducibility
 pl.seed_everything(seed)
 
@@ -56,19 +59,19 @@ class LitCNNModel(pl.LightningModule):
         return optimizer
 
 class CIFAR100DataModule(pl.LightningDataModule):
-    def __init__(self, batch_size, num_workers, transform_config):
+    def __init__(self, batch_size, num_workers, transform):
         super().__init__()
         self.batch_size = batch_size
         self.num_workers = num_workers
-        self.transform_config = transform_config
+        self.transform = transform
 
     def prepare_data(self):
-        get_dataset(name='CIFAR100', train=True, transform_config=self.transform_config)
-        get_dataset(name='CIFAR100', train=False, transform_config=self.transform_config)
+        get_dataset(name='CIFAR100', train=True, transform=self.transform)
+        get_dataset(name='CIFAR100', train=False, transform=self.transform)
 
     def setup(self, stage=None):
-        self.train_dataset = get_dataset(name='CIFAR100', train=True, transform_config=self.transform_config)
-        self.val_dataset = get_dataset(name='CIFAR100', train=False, transform_config=self.transform_config)
+        self.train_dataset = get_dataset(name='CIFAR100', train=True, transform=self.transform)
+        self.val_dataset = get_dataset(name='CIFAR100', train=False, transform=self.transform)
 
     def train_dataloader(self):
         return get_dataloader(self.train_dataset, batch_size=self.batch_size, shuffle=True, num_workers=self.num_workers)
@@ -140,7 +143,7 @@ def create_cnn_config(trial):
 def objective(trial):
     cnn_config = create_cnn_config(trial)
 
-    data_module = CIFAR100DataModule(batch_size=cnn_config.batch_size, num_workers=num_workers, transform_config=None)
+    data_module = CIFAR100DataModule(batch_size=cnn_config.batch_size, num_workers=num_workers, transform=transform)
     model = LitCNNModel(config=cnn_config)
 
     # Use trial.number to differentiate each trial
