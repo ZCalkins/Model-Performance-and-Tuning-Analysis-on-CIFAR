@@ -9,7 +9,7 @@ import os
 import torch
 import yaml
 
-# Load the yaml experiment configurations
+# Load the experiment configuration
 config_file_path = 'CIFAR100-Multi-Model-Ablation-Analysis/configurations/yaml/experiment_config.yaml'
 with open(config_file_path, 'r') as file:
     config = yaml.safe_load(file)
