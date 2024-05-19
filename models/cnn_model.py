@@ -88,7 +88,7 @@ class CNNModel(nn.Module):
                 dropout = nn.Dropout(layer_config.dropout_rate)
                 modules.append(dropout)
             
-            # Optional normalization layer
+            # Optional Normalization Layer
             if layer_config.norm_layer:
                 norm_module = importlib.import_module('torch.nn')
                 NormLayer = getattr(norm_module, layer_config.norm_layer)
