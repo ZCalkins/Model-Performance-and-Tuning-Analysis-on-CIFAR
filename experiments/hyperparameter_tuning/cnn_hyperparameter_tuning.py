@@ -30,7 +30,7 @@ class LitCNNModel(pl.LightningModule):
         super().__init__()
         self.model = CNNModel(config)
         self.config = config
-        self.criterion = nn.CrossEntropyLoss(label_smoothing=config.label_smoothing)
+        self.loss_fn = nn.CrossEntropyLoss(label_smoothing=config.label_smoothing)
 
     def forward(self, x):
         return self.model(x)
@@ -38,14 +38,14 @@ class LitCNNModel(pl.LightningModule):
     def training_step(self, batch, batch_idx):
         x, y = batch
         logits = self(x)
-        loss = self.criterion(logits, y)
+        loss = self.loss_fn(logits, y)
         self.log('train_loss', loss)
         return loss
 
     def validation_step(self, batch, batch_idx):
         x, y = batch
         logits = self(x)
-        loss = self.criterion(logits, y)
+        loss = self.loss_fn(logits, y)
         acc = (logits.argmax(dim=-1) == y).float().mean()
         self.log('val_loss', loss, prog_bar=True)
         self.log('val_acc', acc, prog_bar=True)
@@ -153,7 +153,7 @@ def objective(trial):
     trainer = pl.Trainer(
         logger=logger,
         max_epochs=cnn_config.num_epochs,
-        gpus=1 if torch.cuda.is_available() else 0,
+        gpus=device,
         callbacks=[early_stopping, checkpoint_callback]
     )
 
