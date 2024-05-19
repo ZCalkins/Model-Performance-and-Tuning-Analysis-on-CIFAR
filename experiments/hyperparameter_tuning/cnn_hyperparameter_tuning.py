@@ -22,7 +22,7 @@ num_workers = config['general']['num_workers']
 # Create transform
 transform = create_transform(transform_type='standard', size=224, normalize=True, flatten=False)
 
-# Set the random seed for reproducibility
+# Set random seed for reproducibility
 pl.seed_everything(seed)
 
 class LitCNNModel(pl.LightningModule):
