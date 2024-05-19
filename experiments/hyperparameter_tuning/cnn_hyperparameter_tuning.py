@@ -146,7 +146,6 @@ def objective(trial):
     data_module = CIFAR100DataModule(batch_size=cnn_config.batch_size, num_workers=num_workers, transform=transform)
     model = LitCNNModel(config=cnn_config)
 
-    # Use trial.number to differentiate each trial
     logger = TensorBoardLogger("logs/tensorboard", name="cnn_model", version=f"trial_{trial.number}")
     early_stopping = EarlyStopping('val_loss', patience=5)
     checkpoint_callback = ModelCheckpoint(monitor='val_loss')
@@ -162,7 +161,6 @@ def objective(trial):
     val_result = trainer.validate(model, datamodule=data_module)
     val_loss = val_result[0]['val_loss']
 
-    # Log hyperparameters and their corresponding validation loss
     logger.log_hyperparams(trial.params, {'val_loss': val_loss})
 
     return val_loss
