@@ -67,8 +67,8 @@ class CNNModel(nn.Module):
             # Optional Activation Function with Error Checking
             if layer_config.activation:
                 try:
-                    act_module = importlib.import_module('torch.nn')
-                    ActivationFunction = getattr(act_module, layer_config.activation)
+                    activation_module = importlib.import_module('torch.nn')
+                    ActivationFunction = getattr(activation_module, layer_config.activation)
                     activation = ActivationFunction()
                     modules.append(activation)
                 except AttributeError:
