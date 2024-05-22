@@ -172,7 +172,7 @@ def objective(trial):
     val_loss = val_result[0]['val_loss']
 
     # Log hyperparameters and their corresponding validation loss
-    logger.log_hyperparams(trial.params, {'val_loss': val_loss})
+    logger.experiment.add_hparams(trial.params, {'val_loss': val_loss})
 
     return val_loss
 
