@@ -29,7 +29,10 @@ class ViTModelConfig:
     encoder_configs: List[TransformerEncoderConfig]
     num_classes: int
     optimizer: str = 'adam'
-    learning_rate: float = 0.001
+    optimizer_params: dict = field(default_factory=lambda: {'lr': 0.001})
+    num_epochs: int = 50
+    batch_size: int = 32
+    label_smoothing: float = 0.0
 
 class PatchEmbedding(nn.Module):
     def __init__(self, in_channels: int, patch_size: int, hidden_dim: int):
@@ -37,9 +40,9 @@ class PatchEmbedding(nn.Module):
         self.proj = nn.Conv2d(in_channels, hidden_dim, kernel_size=patch_size, stride=patch_size)
 
     def forward(self, x):
-        x = self.proj(x)  # project and create patches
-        x = x.flatten(2)  # flatten patches
-        x = x.transpose(1, 2)  # change to B, N, C where N is the number of patches
+        x = self.proj(x)
+        x = x.flatten(2)
+        x = x.transpose(1, 2)
         return x
 
 class TransformerEncoderLayer(nn.Module):
