@@ -6,6 +6,7 @@ from data_loading import create_transform, get_dataset, get_dataloader
 from models.vit_model import ViTModel, ViTModelConfig, TransformerEncoderConfig
 from optuna.integration import PyTorchLightningPruningCallback
 import torch
+import torch.nn as nn
 import yaml
 import torchmetrics
 
@@ -160,6 +161,7 @@ def objective(trial):
     trainer = pl.Trainer(
         logger=logger,
         max_epochs=vit_config.num_epochs,  # Using the number of epochs from config
+        accelerator='gpu' if torch.cuda.is_available() else 'cpu',
         gpus=1 if torch.cuda.is_available() else 0,
         callbacks=[early_stopping, checkpoint_callback, pruning_callback]
     )
