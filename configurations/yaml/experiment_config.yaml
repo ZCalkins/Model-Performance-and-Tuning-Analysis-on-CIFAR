@@ -7,10 +7,10 @@ experiment:
   name: "CIFAR100_Analysis"
   version: 1
   description: "Multi-model ablation analysis on CIFAR100 dataset"
-  save_dir: "./experiments/results"  # Base directory to save experiment-specific outputs
-  log_dir: "./logs/tensorboard"  # Directory for logs
-  checkpoints_dir: "./checkpoints"  # Base directory for checkpoints
-  resume_checkpoint: null  # Path to checkpoint to resume training from, if any
+  save_dir: "./experiments/results"  # Base directory to save experiment-specific results
+  log_dir: "./logs/tensorboard"  # Directory for storing logs
+  checkpoints_dir: "./checkpoints"  # Base directory for storing checkpoints
+  resume_checkpoint: null  # Path to checkpoint to resume training from if needed
 
 checkpointing:
   save_best_only: True
