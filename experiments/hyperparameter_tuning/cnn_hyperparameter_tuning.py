@@ -30,6 +30,22 @@ num_workers = config['general']['num_workers']
 # Set random seed for reproducibility
 pl.seed_everything(seed)
 
+# Set up logging
+log_level = getattr(logging, config['logging']['level'].upper(), logging.INFO)
+log_format = config['logging']['format']
+
+handlers = []
+if config['logging']['log_to_file']:
+    log_file = os.path.join(config['experiment']['log_dir'], 'experiment.log')
+    handlers.append(logging.FileHandler(log_file))
+if config['logging']['log_to_console']:
+    handlers.append(logging.StreamHandler())
+
+logging.basicConfig(level=log_level, format=log_format, handlers=handlers)
+
+logger = logging.getLogger('experiment_logger')
+logger.info("Logging configuration set up.")
+
 # Set debug mode if enabled
 if config['misc']['debug']:
     pl.seed_everything(seed, workers=True)
@@ -39,7 +55,7 @@ else:
     num_epochs = config['hyperparameter_optimization']['num_epochs']
     profiler = None
 
-# Create transform
+# Create data transform
 transform = create_transform(transform_type='standard', size=224, normalize=True, flatten=False)
 
 class LitCNNModel(pl.LightningModule):
@@ -76,7 +92,7 @@ class LitCNNModel(pl.LightningModule):
         loss = self.loss_fn(logits, y)
         self.log('val_loss', loss, prog_bar=True)
 
-        # Log accuracy, precision, and recall
+        # Logging accuracy, precision, and recall
         self.val_accuracy(logits, y)
         self.val_precision(logits, y)
         self.val_recall(logits, y)
@@ -118,7 +134,7 @@ class CIFAR100DataModule(pl.LightningDataModule):
         return get_dataloader(self.val_dataset, batch_size=self.batch_size, shuffle=False, num_workers=self.num_workers)
 
 def create_cnn_config(trial):
-    num_layers = trial.suggest_int('num_layers', 2, 5)
+    num_layers = trial.suggest_int('num_layers', 6, 18)
     layers = []
     in_channels = 3
 
@@ -180,13 +196,6 @@ def objective(trial):
 
     data_module = CIFAR100DataModule(batch_size=cnn_config.batch_size, num_workers=num_workers, transform=transform)
     model = LitCNNModel(config=cnn_config)
-
-    # Create directories if they don't exist
-    experiment_type = 'hyperparameter_tuning'
-    log_dir = os.path.join(config['experiment']['log_dir'], experiment_type)
-    checkpoint_dir = os.path.join(config['experiment']['checkpoints_dir'], experiment_type)
-    os.makedirs(log_dir, exist_ok=True)
-    os.makedirs(checkpoint_dir, exist_ok=True)
 
     # Set up logging
     loggers = []
