@@ -3,33 +3,57 @@ import yaml
 import torch
 import optuna
 import pytorch_lightning as pl
-from pytorch_lightning.loggers import TensorBoardLogger
+from pytorch_lightning.loggers import TensorBoardLogger, WandbLogger
 from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
 from utils.data_loading import get_dataset, get_dataloader, create_transform
 from models.cnn_model import CNNModel, CNNModelConfig
+import torchmetrics
+from pytorch_lightning.profiler import SimpleProfiler
 
 # Load the experiment configuration
-config_file_path = 'CIFAR100-Multi-Model-Ablation-Analysis/configurations/yaml/experiment_config.yaml'
+config_file_path = 'configurations/yaml/experiment_config.yaml'
 with open(config_file_path, 'r') as file:
     config = yaml.safe_load(file)
+
+# Optionally load additional config
+if config['misc']['additional_config']:
+    additional_config_file_path = config['misc']['additional_config']
+    with open(additional_config_file_path, 'r') as file:
+        additional_config = yaml.safe_load(file)
+        config.update(additional_config)
 
 # Set up general configurations
 device = torch.device(config['general']['device'])
 seed = config['general']['seed']
 num_workers = config['general']['num_workers']
 
-# Create transform
-transform = create_transform(transform_type='standard', size=224, normalize=True, flatten=False)
-
 # Set random seed for reproducibility
 pl.seed_everything(seed)
+
+# Set debug mode if enabled
+if config['misc']['debug']:
+    pl.seed_everything(seed, workers=True)
+    num_epochs = config['misc']['num_epochs_debug']
+    profiler = SimpleProfiler() if config['misc']['profiler_enabled'] else None
+else:
+    num_epochs = config['hyperparameter_optimization']['num_epochs']
+    profiler = None
+
+# Create transform
+transform = create_transform(transform_type='standard', size=224, normalize=True, flatten=False)
 
 class LitCNNModel(pl.LightningModule):
     def __init__(self, config: CNNModelConfig):
         super().__init__()
         self.model = CNNModel(config)
         self.config = config
-        self.loss_fn = nn.CrossEntropyLoss(label_smoothing=config.label_smoothing)
+        self.loss_fn = torch.nn.CrossEntropyLoss(label_smoothing=config.label_smoothing)
+        
+        # Initialize metrics
+        self.train_accuracy = torchmetrics.Accuracy()
+        self.val_accuracy = torchmetrics.Accuracy()
+        self.val_precision = torchmetrics.Precision(num_classes=config.output_shape)
+        self.val_recall = torchmetrics.Recall(num_classes=config.output_shape)
 
     def forward(self, x):
         return self.model(x)
@@ -39,15 +63,27 @@ class LitCNNModel(pl.LightningModule):
         logits = self(x)
         loss = self.loss_fn(logits, y)
         self.log('train_loss', loss)
+
+        # Log accuracy
+        self.train_accuracy(logits, y)
+        self.log('train_acc', self.train_accuracy, on_step=True, on_epoch=True)
+
         return loss
 
     def validation_step(self, batch, batch_idx):
         x, y = batch
         logits = self(x)
         loss = self.loss_fn(logits, y)
-        acc = (logits.argmax(dim=-1) == y).float().mean()
         self.log('val_loss', loss, prog_bar=True)
-        self.log('val_acc', acc, prog_bar=True)
+
+        # Log accuracy, precision, and recall
+        self.val_accuracy(logits, y)
+        self.val_precision(logits, y)
+        self.val_recall(logits, y)
+        self.log('val_acc', self.val_accuracy, prog_bar=True, on_epoch=True)
+        self.log('val_precision', self.val_precision, prog_bar=True, on_epoch=True)
+        self.log('val_recall', self.val_recall, prog_bar=True, on_epoch=True)
+
         return loss
 
     def configure_optimizers(self):
@@ -65,12 +101,12 @@ class CIFAR100DataModule(pl.LightningDataModule):
         self.transform = transform
 
     def prepare_data(self):
-        get_dataset(name='CIFAR100', train=True, transform=self.transform)
-        get_dataset(name='CIFAR100', train=False, transform=self.transform)
+        get_dataset(name='CIFAR100', train=True, transform_config=transform_config)
+        get_dataset(name='CIFAR100', train=False, transform_config=transform_config)
 
     def setup(self, stage=None):
-        self.train_dataset = get_dataset(name='CIFAR100', train=True, transform=self.transform)
-        self.val_dataset = get_dataset(name='CIFAR100', train=False, transform=self.transform)
+        self.train_dataset = get_dataset(name='CIFAR100', train=True, transform_config=transform_config)
+        self.val_dataset = get_dataset(name='CIFAR100', train=False, transform_config=transform_config)
 
     def train_dataloader(self):
         return get_dataloader(self.train_dataset, batch_size=self.batch_size, shuffle=True, num_workers=self.num_workers)
@@ -145,14 +181,35 @@ def objective(trial):
     data_module = CIFAR100DataModule(batch_size=cnn_config.batch_size, num_workers=num_workers, transform=transform)
     model = LitCNNModel(config=cnn_config)
 
-    logger = TensorBoardLogger("logs/tensorboard", name="cnn_model", version=f"trial_{trial.number}")
-    early_stopping = EarlyStopping('val_loss', patience=5)
-    checkpoint_callback = ModelCheckpoint(monitor='val_loss')
+    # Create directories if they don't exist
+    experiment_type = 'hyperparameter_tuning'
+    log_dir = os.path.join(config['experiment']['log_dir'], experiment_type)
+    checkpoint_dir = os.path.join(config['experiment']['checkpoints_dir'], experiment_type)
+    os.makedirs(log_dir, exist_ok=True)
+    os.makedirs(checkpoint_dir, exist_ok=True)
+
+    # Set up logging
+    loggers = []
+    if config['monitoring']['tensorboard']:
+        loggers.append(TensorBoardLogger(log_dir, name="cnn_model", version=f"trial_{trial.number}"))
+    if config['monitoring']['use_wandb']:
+        loggers.append(WandbLogger(project=config['monitoring']['wandb_project'], entity=config['monitoring']['wandb_entity'], name=f"trial_{trial.number}"))
+
+    early_stopping = EarlyStopping(monitor=config['early_stopping']['monitor'], patience=config['early_stopping']['patience'])
+    checkpoint_callback = ModelCheckpoint(
+        dirpath=checkpoint_dir,
+        monitor=config['checkpointing']['monitor_metric'],
+        save_top_k=1,
+        mode='min'
+    )
 
     trainer = pl.Trainer(
-        logger=logger,
-        max_epochs=cnn_config.num_epochs,
-        gpus=device,
+        logger=loggers,
+        max_epochs=num_epochs,
+        gpus=1 if device.type == 'cuda' else 0,
+        precision=16 if config['misc']['use_mixed_precision'] else 32,
+        deterministic=config['misc']['deterministic'],
+        profiler=profiler,
         callbacks=[early_stopping, checkpoint_callback]
     )
 
@@ -160,14 +217,21 @@ def objective(trial):
     val_result = trainer.validate(model, datamodule=data_module)
     val_loss = val_result[0]['val_loss']
 
-    logger.log_hyperparams(trial.params, {'val_loss': val_loss})
+    # Logs metrics to wandb manually if wandb is enabled
+    if config['monitoring']['use_wandb']:
+        wandb_logger = next((logger for logger in loggers if isinstance(logger, WandbLogger)), None)
+        if wandb_logger:
+            wandb_logger.log_metrics({'val_loss': val_loss, 
+                                      'val_acc': model.val_accuracy.compute().item(), 
+                                      'val_precision': model.val_precision.compute().item(), 
+                                      'val_recall': model.val_recall.compute().item()}, 
+                                     step=trainer.global_step)
 
     return val_loss
 
 if __name__ == "__main__":
-    study = optuna.create_study(direction='minimize')
-    study.optimize(objective, n_trials=100)
+    study = optuna.create_study(direction=config['hyperparameter_optimization']['direction'])
+    study.optimize(objective, n_trials=config['hyperparameter_optimization']['n_trials'])
 
     print(f'Best trial: {study.best_trial.value}')
     print(f'Best hyperparameters: {study.best_trial.params}')
-  train_dataset =  get_dataset(train=True)
