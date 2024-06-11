@@ -1,1 +1,1 @@
-# CIFAR100-Multi-Model-Ablation-Analysis
+# CIFAR100 Multi Model Ablation Analysis
