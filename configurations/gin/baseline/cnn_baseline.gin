@@ -1,14 +1,11 @@
-import my_project.model
-import torch.nn as nn
-
-# Model Configuration
+# Baseline Model Configuration
 CNNModelConfig.model_name = 'CNN_Baseline'
 CNNModelConfig.input_shape = (3, 32, 32)
 CNNModelConfig.output_shape = 100
 CNNModelConfig.batch_size = 32
 CNNModelConfig.num_epochs = 20
 
-# Layer Definitions
+# Layer Configurations
 CNNModelConfig.layers = [
     # Layer 1
     {
@@ -152,6 +149,6 @@ CNNModelConfig.layers = [
 CNNModelConfig.optimizer_class = 'Adam'
 CNNModelConfig.optimizer_params = {'lr': 0.001, 'weight_decay': 0.0001}
 
-# No scheduler used in baseline configuration
+# No Learning Scheduler Is Used
 CNNModelConfig.scheduler_class = None
 CNNModelConfig.scheduler_params = {}
