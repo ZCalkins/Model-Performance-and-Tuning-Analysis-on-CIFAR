@@ -22,7 +22,7 @@ logging:
   # set to "True" to print the log messages to the console when run for real-time monitoring
 
 monitoring:
-  use_wandb: True
+  use_wandb: False
   wandb_project: "CIFAR100_Multi_Model_Analysis"
   wandb_entity: "ZCalkins"
   tensorboard: True
