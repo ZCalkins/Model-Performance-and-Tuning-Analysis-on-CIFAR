@@ -9,8 +9,20 @@ experiment:
   description: "Multi-model ablation analysis on CIFAR100 dataset"
   save_dir: "./experiments/results"  # Base directory to save experiment-specific results
   log_dir: "./logs/tensorboard"  # Directory for storing logs
-  checkpoints_dir: "./checkpoints"  # Base directory for storing checkpoints
-  resume_checkpoint: null  # Path to checkpoint to resume training from if needed
+  checkpoints_dir: "./checkpoints"  # Base directory for any checkpoints
+  resume_checkpoint: null  # Path to checkpoint to resume training, if needed
+
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  log_to_file: True
+  log_to_console: True
+
+monitoring:
+  use_wandb: True
+  wandb_project: "CIFAR100_Multi_Model_Analysis"
+  wandb_entity: "your_entity"
+  tensorboard: True
 
 checkpointing:
   save_best_only: True
