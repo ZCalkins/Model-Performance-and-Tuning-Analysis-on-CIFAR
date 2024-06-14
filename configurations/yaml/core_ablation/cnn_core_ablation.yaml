@@ -6,7 +6,7 @@ general:
 experiment:
   name: "CNN_Core_Ablation"
   version: 1
-  description: "CNN core features ablation analysis conducted on the CIFAR100 dataset"
+  description: "CNN core features ablation analysis conducted upon the CIFAR100 dataset"
   save_dir: "./experiments"
   log_dir: "./logs"
   checkpoints_dir: "./checkpoints"
