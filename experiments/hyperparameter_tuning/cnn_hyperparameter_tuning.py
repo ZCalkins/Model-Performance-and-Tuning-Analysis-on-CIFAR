@@ -11,24 +11,26 @@ import torchmetrics
 from pytorch_lightning.profiler import SimpleProfiler
 
 # Load the experiment configuration
-config_file_path = 'configurations/yaml/experiment_config.yaml'
+config_file_path = 'configurations/yaml/cnn_hyperparameter_tuning.yaml'
 with open(config_file_path, 'r') as file:
     config = yaml.safe_load(file)
-
-# Optionally load additional config
-if config['misc']['additional_config']:
-    additional_config_file_path = config['misc']['additional_config']
-    with open(additional_config_file_path, 'r') as file:
-        additional_config = yaml.safe_load(file)
-        config.update(additional_config)
 
 # Set up general configurations
 device = torch.device(config['general']['device'])
 seed = config['general']['seed']
 num_workers = config['general']['num_workers']
+deterministic = config['misc']['deterministic']
 
 # Set random seed for reproducibility
 pl.seed_everything(seed)
+
+# Manual configuration for deterministic behavior
+if deterministic:
+    torch.manual_seed(seed)
+    np.random.seed(seed)
+    random.seed(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
 
 # Set up logging
 log_level = getattr(logging, config['logging']['level'].upper(), logging.INFO)
@@ -204,8 +206,6 @@ def objective(trial):
     loggers = []
     if config['monitoring']['tensorboard']:
         loggers.append(TensorBoardLogger(log_dir, name="cnn_model", version=f"trial_{trial.number}"))
-    if config['monitoring']['use_wandb']:
-        loggers.append(WandbLogger(project=config['monitoring']['wandb_project'], entity=config['monitoring']['wandb_entity'], name=f"trial_{trial.number}"))
 
     early_stopping = EarlyStopping(monitor=config['early_stopping']['monitor'], patience=config['early_stopping']['patience'])
     checkpoint_callback = ModelCheckpoint(
