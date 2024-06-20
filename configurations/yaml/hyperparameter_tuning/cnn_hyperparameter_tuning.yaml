@@ -52,5 +52,5 @@ misc:
   deterministic: False
   additional_config: "path_to_additional_config.yaml"
   smaller_dataset: True
-  num_epochs_debug: 2
+  num_epochs_debug: 5
   profiler_enabled: True
