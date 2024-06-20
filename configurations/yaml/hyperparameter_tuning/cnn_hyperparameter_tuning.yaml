@@ -6,8 +6,9 @@ general:
 experiment:
   name: "CNN_Hyperparameter_Tuning_CIFAR100"
   description: "CNN hyperparameter tuning on the CIFAR100 dataset"
-  save_dir: "results/hyperparameter_tuning/cnn"
-  log_dir: "logs/tensorboard/hyperparameter_tuning"
+  save_dir: "./results/hyperparameter_tuning/cnn"
+  log_dir: "./logs/experiment_logs/hyperparameter_tuning/cnn"
+  tensorboard_log_dir: "./logs/tensorboard/hyperparameter_tuning/cnn"
   checkpoints_dir: "checkpoints/hyperparameter_tuning/cnn"
   resume_checkpoint: null
   # Change this to the path of the checkpoint file to resume
