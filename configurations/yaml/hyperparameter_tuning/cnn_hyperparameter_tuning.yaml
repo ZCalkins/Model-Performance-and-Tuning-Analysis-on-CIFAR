@@ -7,19 +7,16 @@ experiment:
   name: "CIFAR100_Analysis"
   version: 1
   description: "Multi-model ablation analysis on CIFAR100 dataset"
-  save_dir: "./experiments"
-  log_dir: "./logs"
-  checkpoints_dir: "./checkpoints"
+  save_dir: "results/hyperparameter_tuning/cnn"
+  log_dir: "logs/tensorboard/hyperparameter_tuning"
+  checkpoints_dir: "checkpoints/hyperparameter_tuning/cnn"
   resume_checkpoint: null
 
 logging:
   level: "INFO"
-  # Change level to "DEBUG" for debugging to provide more detailed info
   format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
   log_to_file: False
-  # when set to "True" saves log messages to a file for later review (useful for debugging)
   log_to_console: False
-  # set to "True" to print the log messages to the console when run for real-time monitoring
 
 monitoring:
   tensorboard: True
@@ -55,8 +52,5 @@ misc:
   deterministic: False
   additional_config: "path_to_additional_config.yaml"
   smaller_dataset: True
-  # Using a smaller subset of the data allows for faster debugging
   num_epochs_debug: 2
-  # Reducing number of epochs also allows for faster debugging
   profiler_enabled: True
-  # Enables pytorch lightning's simple profiler for debugging
