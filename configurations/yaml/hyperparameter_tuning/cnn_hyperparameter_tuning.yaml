@@ -15,8 +15,8 @@ experiment:
 logging:
   level: "INFO"
   format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-  log_to_file: False
-  log_to_console: False
+  log_to_file: True
+  log_to_console: True
 
 monitoring:
   tensorboard: True
