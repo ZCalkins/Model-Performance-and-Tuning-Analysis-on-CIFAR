@@ -231,18 +231,27 @@ def objective(trial):
         precision=16 if config['misc']['use_mixed_precision'] else 32,
         deterministic=config['misc']['deterministic'],
         profiler=profiler,
-        callbacks=[early_stopping, checkpoint_callback]
+        callbacks=[early_stopping, checkpoint_callback],
+        resume_from_checkpoint=config['experiment']['resume_checkpoint']
     )
 
     trainer.fit(model, datamodule=data_module)
     val_result = trainer.validate(model, datamodule=data_module)
     val_loss = val_result[0]['val_loss']
 
+    if tensorboard_logger:
+        tensorboard_logger.log_hyperparams(trial.params, {'val_loss': val_loss})
+
+    results_file = os.path.join(config['experiment']['save_dir'], 'results.yaml')
+    os.makedirs(os.path.dirname(results_file), exist_ok=True)
+    with open(results_file, 'w') as f:
+        yaml.dump({'trial': trial.number, 'params': trial.params, 'val_loss': val_loss, f}
+    
     return val_loss
 
 if __name__ == "__main__":
     study = optuna.create_study(direction=config['hyperparameter_optimization']['direction'])
     study.optimize(objective, n_trials=config['hyperparameter_optimization']['n_trials'])
 
-    print(f'Best trial: {study.best_trial.value}')
-    print(f'Best hyperparameters: {study.best_trial.params}')
+    logger.info(f'Best trial: {study.best_trial.value}')
+    logger.info(f'Best hyperparameters: {study.best_trial.params}')
