@@ -229,16 +229,6 @@ def objective(trial):
     val_result = trainer.validate(model, datamodule=data_module)
     val_loss = val_result[0]['val_loss']
 
-    # Logs metrics to wandb manually if wandb is enabled
-    if config['monitoring']['use_wandb']:
-        wandb_logger = next((logger for logger in loggers if isinstance(logger, WandbLogger)), None)
-        if wandb_logger:
-            wandb_logger.log_metrics({'val_loss': val_loss, 
-                                      'val_acc': model.val_accuracy.compute().item(), 
-                                      'val_precision': model.val_precision.compute().item(), 
-                                      'val_recall': model.val_recall.compute().item()}, 
-                                     step=trainer.global_step)
-
     return val_loss
 
 if __name__ == "__main__":
