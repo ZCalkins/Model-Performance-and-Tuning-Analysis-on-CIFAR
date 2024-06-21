@@ -3,7 +3,7 @@ import yaml
 import torch
 import optuna
 import pytorch_lightning as pl
-from pytorch_lightning.loggers import TensorBoardLogger, WandbLogger
+from pytorch_lightning.loggers import TensorBoardLogger
 from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
 from utils.data_loading import get_dataset, get_dataloader, create_transform
 from models.cnn_model import CNNModel, CNNModelConfig
