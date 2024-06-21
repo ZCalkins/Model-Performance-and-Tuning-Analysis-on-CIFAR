@@ -213,11 +213,12 @@ def objective(trial):
     # Set up logging
     loggers = []
     if config['monitoring']['tensorboard']:
-        loggers.append(TensorBoardLogger(log_dir, name="cnn_model", version=f"trial_{trial.number}"))
+        tensorboard_logger = TensorBoardLogger(config['experiment']['tensorboard_log_dir'], name="cnn_model_hpo", version=f"trial_{trial.number}")
+        loggers.append(tensorboard_logger)
 
     early_stopping = EarlyStopping(monitor=config['early_stopping']['monitor'], patience=config['early_stopping']['patience'])
     checkpoint_callback = ModelCheckpoint(
-        dirpath=checkpoint_dir,
+        dirpath=config['experiment']['checkpoints_dir'],
         monitor=config['checkpointing']['monitor_metric'],
         save_top_k=1,
         mode='min'
