@@ -120,14 +120,22 @@ class CIFAR100DataModule(pl.LightningDataModule):
         self.batch_size = batch_size
         self.num_workers = num_workers
         self.transform = transform
+        self.use_smaller_dataset = use_smaller_dataset
 
     def prepare_data(self):
         get_dataset(name='CIFAR100', train=True, transform_config=transform_config)
         get_dataset(name='CIFAR100', train=False, transform_config=transform_config)
 
     def setup(self, stage=None):
-        self.train_dataset = get_dataset(name='CIFAR100', train=True, transform_config=transform_config)
-        self.val_dataset = get_dataset(name='CIFAR100', train=False, transform_config=transform_config)
+        train_dataset = get_dataset(name='CIFAR100', train=True, transform_config=transform_config)
+        val_dataset = get_dataset(name='CIFAR100', train=False, transform_config=transform_config)
+
+        if self.use_smaller_subset:
+            train_dataset = Subset(train_dataset, range(len(train_dataset) // 10))
+            val_dataset = Subset(val_dataset, range(len(val_dataset) // 10))
+
+        self.train_dataset = train_dataset
+        self.val_dataset = val_dataset
 
     def train_dataloader(self):
         return get_dataloader(self.train_dataset, batch_size=self.batch_size, shuffle=True, num_workers=self.num_workers)
