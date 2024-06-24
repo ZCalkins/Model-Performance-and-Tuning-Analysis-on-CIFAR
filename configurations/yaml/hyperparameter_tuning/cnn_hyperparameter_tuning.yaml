@@ -50,6 +50,6 @@ misc:
   use_mixed_precision: True
   deterministic: False
   additional_config: "path_to_additional_config.yaml"
-  smaller_dataset: True
+  smaller_dataset: False
   num_epochs_debug: 5
-  profiler_enabled: True
+  profiler_enabled: False
