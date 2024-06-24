@@ -81,7 +81,7 @@ class LitCNNModel(pl.LightningModule):
         self.val_accuracy = torchmetrics.Accuracy()
         self.val_precision = torchmetrics.Precision(num_classes=config.output_shape)
         self.val_recall = torchmetrics.Recall(num_classes=config.output_shape)
-        self.val_f1 = torchmetrics.F1(num_classes=config.output_shape)
+        self.val_f1 = torchmetrics.F1Score(num_classes=config.output_shape)
 
     def forward(self, x):
         return self.model(x)
@@ -139,7 +139,7 @@ class CIFAR100DataModule(pl.LightningDataModule):
         train_dataset = get_dataset(name='CIFAR100', train=True, transform_config=transform_config)
         val_dataset = get_dataset(name='CIFAR100', train=False, transform_config=transform_config)
 
-        if self.use_smaller_subset:
+        if self.use_smaller_dataset:
             train_dataset = Subset(train_dataset, range(len(train_dataset) // 10))
             val_dataset = Subset(val_dataset, range(len(val_dataset) // 10))
 
@@ -216,7 +216,12 @@ def create_cnn_config(trial):
 def objective(trial):
     cnn_config = create_cnn_config(trial)
 
-    data_module = CIFAR100DataModule(batch_size=cnn_config.batch_size, num_workers=num_workers, transform=transform)
+    data_module = CIFAR100DataModule(
+        batch_size=cnn_config.batch_size,
+        num_workers=num_workers,
+        transform=transform,
+        use_smaller_dataset=use_smaller_dataset
+    )
     model = LitCNNModel(config=cnn_config)
 
     # Set up logging
