@@ -49,6 +49,7 @@ log_format = config['logging']['format']
 handlers = []
 if config['logging']['log_to_file']:
     log_file = os.path.join(config['experiment']['log_dir'], 'experiment.log')
+    os.makedirs(os.path.dirname(log_file), exist_ok=True)
     handlers.append(logging.FileHandler(log_file))
 if config['logging']['log_to_console']:
     handlers.append(logging.StreamHandler())
