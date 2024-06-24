@@ -25,7 +25,6 @@ monitoring:
 checkpointing:
   save_best_only: True
   monitor_metric: "val_loss"
-  save_freq: "epoch"
   max_checkpoints: 5
 
 early_stopping:
