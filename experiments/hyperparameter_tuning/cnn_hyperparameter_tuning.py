@@ -65,7 +65,7 @@ if config['misc']['debug']:
     num_epochs = num_epochs_debug
     profiler = SimpleProfiler() if profiler_enabled else None
 else:
-    num_epochs = config['hyperparameter_optimization']['num_epochs']
+    num_epochs = config['hyperparameter_optimization']['n_trials']
     profiler = None
 
 # Create data transform
