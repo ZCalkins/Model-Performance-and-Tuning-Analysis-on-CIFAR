@@ -30,6 +30,7 @@ use_smaller_dataset = config['misc']['smaller_dataset']
 num_epochs_debug = config['misc']['num_epochs_debug']
 profiler_enabled = config['misc']['profiler_enabled']
 
+
 # Set random seed for reproducibility
 pl.seed_everything(seed)
 
@@ -90,11 +91,11 @@ class LitCNNModel(pl.LightningModule):
         x, y = batch
         logits = self(x)
         loss = self.loss_fn(logits, y)
-        self.log('train_loss', loss)
+        self.log('train_loss', loss, prog_bar=True)
 
         # Log accuracy
         self.train_accuracy(logits, y)
-        self.log('train_acc', self.train_accuracy, on_step=True, on_epoch=True)
+        self.log('train_acc', self.train_accuracy, on_step=True, on_epoch=True, prog_bar=True)
 
         return loss
 
@@ -113,6 +114,9 @@ class LitCNNModel(pl.LightningModule):
         self.log('val_precision', self.val_precision, prog_bar=True, on_epoch=True)
         self.log('val_recall', self.val_recall, prog_bar=True, on_epoch=True)
         self.log('val_f1', self.val_f1, prog_bar=True, on_epoch=True)
+
+        if verbose:
+            logger.info(f"Validation Step - Batch {batch_idx}: Loss = {loss.item()}")
 
         return loss
 
@@ -230,11 +234,15 @@ def objective(trial):
         tensorboard_logger = TensorBoardLogger(config['experiment']['tensorboard_log_dir'], name="cnn_model_hpo", version=f"trial_{trial.number}")
         loggers.append(tensorboard_logger)
 
-    early_stopping = EarlyStopping(monitor=config['early_stopping']['monitor'], patience=config['early_stopping']['patience'])
+    early_stopping = EarlyStopping(
+        monitor=config['early_stopping']['monitor'],
+        patience=config['early_stopping']['patience'],
+        min_delta=config['early_stopping']['min_delta']
+    )
     checkpoint_callback = ModelCheckpoint(
         dirpath=config['experiment']['checkpoints_dir'],
         monitor=config['checkpointing']['monitor_metric'],
-        save_top_k=1,
+        save_top_k=1 if config['checkpointing']['save_best_only'] else config['checkpointing']['max_checkpoints'],
         mode='min'
     )
 
