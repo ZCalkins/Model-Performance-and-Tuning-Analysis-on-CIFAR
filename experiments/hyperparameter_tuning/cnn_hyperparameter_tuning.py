@@ -26,6 +26,9 @@ device = torch.device(config['general']['device'])
 seed = config['general']['seed']
 num_workers = config['general']['num_workers']
 deterministic = config['misc']['deterministic']
+use_smaller_dataset = config['misc']['smaller_dataset']
+num_epochs_debug = config['misc']['num_epochs_debug']
+profiler_enabled = config['misc']['profiler_enabled']
 
 # Set random seed for reproducibility
 pl.seed_everything(seed)
@@ -57,8 +60,8 @@ logger.info("Logging configuration set up.")
 # Set debug mode if enabled
 if config['misc']['debug']:
     pl.seed_everything(seed, workers=True)
-    num_epochs = config['misc']['num_epochs_debug']
-    profiler = SimpleProfiler() if config['misc']['profiler_enabled'] else None
+    num_epochs = num_epochs_debug
+    profiler = SimpleProfiler() if profiler_enabled else None
 else:
     num_epochs = config['hyperparameter_optimization']['num_epochs']
     profiler = None
@@ -121,7 +124,7 @@ class LitCNNModel(pl.LightningModule):
         return optimizer
 
 class CIFAR100DataModule(pl.LightningDataModule):
-    def __init__(self, batch_size, num_workers, transform):
+    def __init__(self, batch_size, num_workers, transform, use_smaller_dataset):
         super().__init__()
         self.batch_size = batch_size
         self.num_workers = num_workers
