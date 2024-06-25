@@ -4,33 +4,27 @@ general:
   num_workers: 4
 
 experiment:
-  name: "CIFAR100_Analysis"
-  version: 1
-  description: "Multi-model ablation analysis on CIFAR100 dataset"
-  save_dir: "./experiments"
-  log_dir: "./logs"
-  checkpoints_dir: "./checkpoints"
+  name: "ViT_Hyperparameter_Tuning_CIFAR100"
+  description: "ViT hyperparameter tuning on the CIFAR100 dataset"
+  save_dir: "./results/hyperparameter_tuning/vit"
+  log_dir: "./logs/experiment_logs/hyperparameter_tuning/vit"
+  tensorboard_log_dir: "./logs/tensorboard/hyperparameter_tuning/vit"
+  checkpoints_dir: "checkpoints/hyperparameter_tuning/vit"
   resume_checkpoint: null
+  # Change this to the path of the checkpoint file to resume
 
 logging:
   level: "INFO"
-  # Change level to "DEBUG" for debugging to provide more detailed info
   format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-  log_to_file: False
-  # when set to "True" saves log messages to a file for later review (useful for debugging)
-  log_to_console: False
-  # set to "True" to print the log messages to the console when run for real-time monitoring
+  log_to_file: True
+  log_to_console: True
 
 monitoring:
-  use_wandb: False
-  wandb_project: "CIFAR100_Multi_Model_Analysis"
-  wandb_entity: "ZCalkins"
   tensorboard: True
 
 checkpointing:
   save_best_only: True
   monitor_metric: "val_loss"
-  save_freq: "epoch"
   max_checkpoints: 5
 
 early_stopping:
@@ -40,26 +34,20 @@ early_stopping:
   min_delta: 0.001
 
 hyperparameter_optimization:
-  enabled: True
-  optimizer: "Optuna"
   n_trials: 100
   pruner: "SuccessiveHalvingPruner"
   direction: "minimize"
 
 evaluation:
-  metrics: ["accuracy", "precision", "recall"]
+  metrics: ["accuracy", "precision", "recall", "f1"]
   batch_size: 32
   num_workers: 4
-  verbose: True
 
 misc:
   debug: False
   use_mixed_precision: True
   deterministic: False
   additional_config: "path_to_additional_config.yaml"
-  smaller_dataset: True
-  # Using a smaller subset of the data allows for faster debugging
-  num_epochs_debug: 2
-  # Reducing number of epochs also allows for faster debugging
-  profiler_enabled: True
-  # Enables pytorch lightning's simple profiler for debugging
+  smaller_dataset: False
+  num_epochs_debug: 5
+  profiler_enabled: False
