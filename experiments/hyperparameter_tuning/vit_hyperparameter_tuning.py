@@ -14,10 +14,10 @@ from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
 from pytorch_lightning.profiler import SimpleProfiler
 
 from utils.data_loading import get_dataset, get_dataloader, create_transform
-from models.vit_model import ViTModel, ViTModelConfig
+from models.gmlp_model import GatedMLP, GatedMLPModelConfig, GatedMLPLayerConfig
 
 # Load the experiment configuration
-config_file_path = 'configurations/yaml/vit_hyperparameter_tuning.yaml'
+config_file_path = 'configurations/yaml/gmlp_hyperparameter_tuning.yaml'
 with open(config_file_path, 'r') as file:
     config = yaml.safe_load(file)
 
@@ -29,7 +29,6 @@ deterministic = config['misc']['deterministic']
 use_smaller_dataset = config['misc']['smaller_dataset']
 num_epochs_debug = config['misc']['num_epochs_debug']
 profiler_enabled = config['misc']['profiler_enabled']
-
 
 # Set random seed for reproducibility
 pl.seed_everything(seed)
@@ -49,7 +48,7 @@ log_format = config['logging']['format']
 handlers = []
 if config['logging']['log_to_file']:
     log_file = os.path.join(config['experiment']['log_dir'], 'experiment.log')
-    os.makedirs(os.path.dirname(log_file), exist_ok=True)
+    os.makedirs(os.path.dirname(log_file), exist_ok=True)  # Ensure directory exists
     handlers.append(logging.FileHandler(log_file))
 if config['logging']['log_to_console']:
     handlers.append(logging.StreamHandler())
@@ -69,21 +68,21 @@ else:
     profiler = None
 
 # Create data transform
-transform = create_transform(transform_type='standard', size=224, normalize=True, flatten=False)
+transform = create_transform(transform_type='standard', size=224, normalize=True, flatten=True)
 
-class LitViTModel(pl.LightningModule):
-    def __init__(self, config: ViTModelConfig):
+class LitGatedMLPModel(pl.LightningModule):
+    def __init__(self, config: GatedMLPModelConfig):
         super().__init__()
-        self.model = ViTModel(config)
+        self.model = GatedMLP(config)
         self.config = config
         self.loss_fn = torch.nn.CrossEntropyLoss(label_smoothing=config.label_smoothing)
         
         # Initialize metrics
         self.train_accuracy = torchmetrics.Accuracy()
         self.val_accuracy = torchmetrics.Accuracy()
-        self.val_precision = torchmetrics.Precision(num_classes=config.output_shape)
-        self.val_recall = torchmetrics.Recall(num_classes=config.output_shape)
-        self.val_f1 = torchmetrics.F1Score(num_classes=config.output_shape)
+        self.val_precision = torchmetrics.Precision(num_classes=config.output_dim)
+        self.val_recall = torchmetrics.Recall(num_classes=config.output_dim)
+        self.val_f1 = torchmetrics.F1Score(num_classes=config.output_dim)
 
     def forward(self, x):
         return self.model(x)
@@ -106,26 +105,23 @@ class LitViTModel(pl.LightningModule):
         loss = self.loss_fn(logits, y)
         self.log('val_loss', loss, prog_bar=True)
 
-        # Logging accuracy, precision, and recall
+        # Logging accuracy, precision, recall, and F1 score
         self.val_accuracy(logits, y)
         self.val_precision(logits, y)
         self.val_recall(logits, y)
-        self.f1(logits, y)
+        self.val_f1(logits, y)
         self.log('val_acc', self.val_accuracy, prog_bar=True, on_epoch=True)
         self.log('val_precision', self.val_precision, prog_bar=True, on_epoch=True)
         self.log('val_recall', self.val_recall, prog_bar=True, on_epoch=True)
         self.log('val_f1', self.val_f1, prog_bar=True, on_epoch=True)
 
-        if verbose:
-            logger.info(f"Validation Step - Batch {batch_idx}: Loss = {loss.item()}")
-
         return loss
 
     def configure_optimizers(self):
-        if self.config.optimizer_class == 'Adam':
-            optimizer = torch.optim.Adam(self.parameters(), **self.config.optimizer_params)
-        elif self.config.optimizer_class == 'SGD':
-            optimizer = torch.optim.SGD(self.parameters(), **self.config.optimizer_params)
+        if self.config.optimizer == 'adam':
+            optimizer = torch.optim.Adam(self.parameters(), lr=self.config.learning_rate)
+        elif self.config.optimizer == 'sgd':
+            optimizer = torch.optim.SGD(self.parameters(), lr=self.config.learning_rate)
         return optimizer
 
 class CIFAR100DataModule(pl.LightningDataModule):
@@ -137,12 +133,12 @@ class CIFAR100DataModule(pl.LightningDataModule):
         self.use_smaller_dataset = use_smaller_dataset
 
     def prepare_data(self):
-        get_dataset(name='CIFAR100', train=True, transform_config=transform_config)
-        get_dataset(name='CIFAR100', train=False, transform_config=transform_config)
+        get_dataset(name='CIFAR100', train=True, transform=self.transform)
+        get_dataset(name='CIFAR100', train=False, transform=self.transform)
 
     def setup(self, stage=None):
-        train_dataset = get_dataset(name='CIFAR100', train=True, transform_config=transform_config)
-        val_dataset = get_dataset(name='CIFAR100', train=False, transform_config=transform_config)
+        train_dataset = get_dataset(name='CIFAR100', train=True, transform=self.transform)
+        val_dataset = get_dataset(name='CIFAR100', train=False, transform=self.transform)
 
         if self.use_smaller_dataset:
             train_dataset = Subset(train_dataset, range(len(train_dataset) // 10))
@@ -160,66 +156,57 @@ class CIFAR100DataModule(pl.LightningDataModule):
     def test_dataloader(self):
         return get_dataloader(self.val_dataset, batch_size=self.batch_size, shuffle=False, num_workers=self.num_workers)
 
-def create_vit_config(trial):
-    num_layers = trial.suggest_int('num_layers', 6, 18)
-    encoder_configs = []
+def create_gmlp_config(trial):
+    num_layers = trial.suggest_int('num_layers', 1, 10)
+    layers = []
+    input_dim = trial.suggest_int('input_dim', 128, 512)
+    output_dim = trial.suggest_int('output_dim', 10, 100)
+    
     for i in range(num_layers):
-        num_heads = trial.suggest_int(f'num_heads_{i}', 4, 16)
-        head_dim = trial.suggest_int(f'head_dim_{i}', 64, 128)
-        mlp_dim = trial.suggest_int(f'mlp_dim_{i}', 256, 512)
-        dropout_rate = trial.suggest_float(f'dropout_rate_{i}', 0.0, 0.5)
-        attention_dropout_rate = tirla.suggest_float(f'attention_dropout_rate_{i}', 0.0, 0.5)
-
-        encoder_config = TransformerEncoderConfig(
-            num_heads=num_heads,
-            head_dim=head_dim,
-            mlp_dim=mlp_dim,
-            dropout_rate=dropout_rate,
-            attention_dropout_rate=attention_dropout_rate
+        layer_config = GatedMLPLayerConfig(
+            input_dim=input_dim,
+            output_dim=output_dim,
+            use_gate=trial.suggest_categorical(f'use_gate_{i}', [True, False]),
+            dropout_rate=trial.suggest_float(f'dropout_rate_{i}', 0.0, 0.5)
         )
-        encoder_configs.append(encoder_cofig)
+        layers.append(layer_config)
+        input_dim = output_dim
 
-    optimizer = trial.suggest_categorical('optimizer', ['Adam', 'SGD'])
-    optimizer_params = {'lr': trial_suggest_float('lr', 1e-5, 1e-1, log=True)}
-    if optimizer == 'SGD':
-        optimizer_params['momentum'] = trial.suggest_float('momentum', 0.5, 0.9)
-        optimizer_params['weight_decay'] = trial.suggest_float('weight_decay', 1e-6, 1e-2, log=True)
-
+    optimizer = trial.suggest_categorical('optimizer', ['adam', 'sgd'])
+    learning_rate = trial.suggest_float('learning_rate', 1e-5, 1e-1, log=True)
+    batch_size = trial.suggest_int('batch_size', 32, 128, step=16)
+    num_epochs = trial.suggest_int('num_epochs', 10, 50)
     label_smoothing = trial.suggest_float('label_smoothing', 0.0, 0.2)
 
-    vit_config = ViTModelConfig(
+    gmlp_config = GatedMLPModelConfig(
         model_name=config['experiment']['name'],
-        image_size=224,
-        patch_size=16,
-        num_channels=3,
-        hidden_dim=trial.suggest_int('hidden_dim', 128, 512),
-        num_layers=num_layers,
-        encoder_configs=encoder_configs,
-        num_classes=100,
+        input_dim=input_dim,
+        output_dim=output_dim,
+        layers=layers,
         optimizer=optimizer,
-        optimizer_params=optimizer_params,
-        num_epochs=trial.suggest_int('num_epochs', 10, 50),
-        batch_size=trial.suggest_int('batch_size', 32, 128, step=16),
-        label_smoothing=label_smoothing
+        learning_rate=learning_rate,
+        batch_size=batch_size,
+        num_epochs=num_epochs,
+        dropout_rate=trial.suggest_float('dropout_rate', 0.0, 0.5)
     )
 
-    return vit_config
+    return gmlp_config
 
 def objective(trial):
-    vit_config = create_vit_config(trial)
+    gmlp_config = create_gmlp_config(trial)
 
     data_module = CIFAR100DataModule(
-        batch_size=vit_config.batch_size,
+        batch_size=gmlp_config.batch_size,
         num_workers=num_workers,
         transform=transform,
         use_smaller_dataset=use_smaller_dataset
     )
-    model = LitViTModel(config=vit_config)
+    model = LitGatedMLPModel(config=gmlp_config)
 
-     # Set up logging
+    # Set up logging
     loggers = []
     if config['monitoring']['tensorboard']:
-        tensorboard_logger = TensorBoardLogger(config['experiment']['tensorboard_log_dir'], name="vit_model_hpo", version=f"trial_{trial.number}")
+        tensorboard_logger = TensorBoardLogger(config['experiment']['tensorboard_log_dir'], name="gmlp_model_hpo", version=f"trial_{trial.number}")
         loggers.append(tensorboard_logger)
 
     early_stopping = EarlyStopping(monitor=config['early_stopping']['monitor'], patience=config['early_stopping']['patience'])
@@ -232,7 +219,7 @@ def objective(trial):
 
     trainer = pl.Trainer(
         logger=loggers,
-        max_epochs=vit_config.num_epochs,
+        max_epochs=gmlp_config.num_epochs,
         gpus=1 if device.type == 'cuda' else 0,
         precision=16 if config['misc']['use_mixed_precision'] else 32,
         deterministic=config['misc']['deterministic'],
