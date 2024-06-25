@@ -268,7 +268,7 @@ def objective(trial):
     results_file = os.path.join(config['experiment']['save_dir'], f'results_trial_{trial.number}.yaml')
     os.makedirs(os.path.dirname(results_file), exist_ok=True)
     with open(results_file, 'w') as f:
-        yaml.dump({'trial': trial.number, 'params': trial.params, 'val_loss': val_loss, f}
+        yaml.dump({'trial': trial.number, 'params': trial.params, 'val_loss': val_loss}, f)
     
     return val_loss
 
