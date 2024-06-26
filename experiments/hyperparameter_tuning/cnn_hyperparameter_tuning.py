@@ -90,11 +90,11 @@ class LitCNNModel(pl.LightningModule):
         self.loss_fn = torch.nn.CrossEntropyLoss(label_smoothing=config.label_smoothing)
         
         # Initialize metrics
-        self.train_accuracy = torchmetrics.Accuracy()
-        self.val_accuracy = torchmetrics.Accuracy()
-        self.val_precision = torchmetrics.Precision(num_classes=config.output_shape)
-        self.val_recall = torchmetrics.Recall(num_classes=config.output_shape)
-        self.val_f1 = torchmetrics.F1Score(num_classes=config.output_shape)
+        self.train_accuracy = torchmetrics.Accuracy(task="multiclass", num_classes=config.output_shape)
+        self.val_accuracy = torchmetrics.Accuracy(task="multiclass", num_classes=config.output_shape)
+        self.val_precision = torchmetrics.Precision(task="multiclass", num_classes=config.output_shape)
+        self.val_recall = torchmetrics.Recall(task="multiclass", num_classes=config.output_shape)
+        self.val_f1 = torchmetrics.F1Score(task="multiclass", num_classes=config.output_shape)
 
     def forward(self, x):
         return self.model(x)
