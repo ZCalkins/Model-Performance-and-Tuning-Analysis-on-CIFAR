@@ -152,12 +152,12 @@ class CIFAR100DataModule(pl.LightningDataModule):
         self.use_smaller_dataset = use_smaller_dataset
 
     def prepare_data(self):
-        get_dataset(name='CIFAR100', train=True, transform_config=transform_config)
-        get_dataset(name='CIFAR100', train=False, transform_config=transform_config)
+        get_dataset(name='CIFAR100', train=True, transform_config=self.transform)
+        get_dataset(name='CIFAR100', train=False, transform_config=self.transform)
 
     def setup(self, stage=None):
-        train_dataset = get_dataset(name='CIFAR100', train=True, transform_config=transform_config)
-        val_dataset = get_dataset(name='CIFAR100', train=False, transform_config=transform_config)
+        train_dataset = get_dataset(name='CIFAR100', train=True, transform_config=self.transform)
+        val_dataset = get_dataset(name='CIFAR100', train=False, transform_config=self.transform)
 
         if self.use_smaller_dataset:
             train_dataset = Subset(train_dataset, range(len(train_dataset) // 10))
