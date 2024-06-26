@@ -31,7 +31,7 @@ config['experiment']['save_dir'] = os.path.join(project_root, config['experiment
 config['experiment']['tensorboard_log_dir'] = os.path.join(project_root, config['experiment']['tensorboard_log_dir'])
 
 from utils.data_loading import get_dataset, get_dataloader, create_transform
-from models.cnn_model import CNNModel, CNNModelConfig
+from models.cnn_model import CNNModel, CNNModelConfig, CNNLayerConfig
 
 # Set up general configurations
 device = "cuda" if torch.cuda.is_available() else "cpu"
