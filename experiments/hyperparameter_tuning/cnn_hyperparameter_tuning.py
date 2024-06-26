@@ -34,7 +34,8 @@ from utils.data_loading import get_dataset, get_dataloader, create_transform
 from models.cnn_model import CNNModel, CNNModelConfig
 
 # Set up general configurations
-device = torch.device(config['general']['device'])
+device = "cuda" if torch.cuda.is_available() else "cpu"
+torch.set_default_device(device)
 seed = config['general']['seed']
 num_workers = config['general']['num_workers']
 deterministic = config['misc']['deterministic']
