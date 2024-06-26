@@ -260,6 +260,7 @@ def objective(trial):
         logger=loggers,
         max_epochs=num_epochs,
         gpus=1 if device == 'cuda' else 0,
+        accelerator='gpu' if device == 'cuda' else 'cpu',
         precision=16 if config['misc']['use_mixed_precision'] else 32,
         deterministic=config['misc']['deterministic'],
         profiler=profiler,
