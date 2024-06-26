@@ -17,7 +17,7 @@ from utils.data_loading import get_dataset, get_dataloader, create_transform
 from models.cnn_model import CNNModel, CNNModelConfig
 
 # Load the experiment configuration
-config_file_path = 'configurations/yaml/cnn_hyperparameter_tuning.yaml'
+config_file_path = 'configurations/yaml/hyperparameter_tuning/cnn_hyperparameter_tuning.yaml'
 with open(config_file_path, 'r') as file:
     config = yaml.safe_load(file)
 
