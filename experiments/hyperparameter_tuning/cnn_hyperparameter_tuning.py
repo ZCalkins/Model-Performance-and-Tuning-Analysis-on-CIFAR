@@ -19,13 +19,19 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 project_root = os.path.abspath(os.path.join(script_dir, '..', '..'))
 sys.path.append(project_root)
 
-from utils.data_loading import get_dataset, get_dataloader, create_transform
-from models.cnn_model import CNNModel, CNNModelConfig
-
 # Load the experiment configuration
 config_file_path = os.path.join(project_root, 'configurations', 'yaml', 'hyperparameter_tuning', 'cnn_hyperparameter_tuning.yaml')
 with open(config_file_path, 'r') as file:
     config = yaml.safe_load(file)
+
+# Convert necessary paths to absolute paths
+config['experiment']['log_dir'] = os.path.join(project_root, config['experiment']['log_dir'])
+config['experiment']['checkpoints_dir'] = os.path.join(project_root, config['experiment']['checkpoints_dir'])
+config['experiment']['save_dir'] = os.path.join(project_root, config['experiment']['save_dir'])
+config['experiment']['tensorboard_log_dir'] = os.path.join(project_root, config['experiment']['tensorboard_log_dir'])
+
+from utils.data_loading import get_dataset, get_dataloader, create_transform
+from models.cnn_model import CNNModel, CNNModelConfig
 
 # Set up general configurations
 device = torch.device(config['general']['device'])
@@ -35,7 +41,6 @@ deterministic = config['misc']['deterministic']
 use_smaller_dataset = config['misc']['smaller_dataset']
 num_epochs_debug = config['misc']['num_epochs_debug']
 profiler_enabled = config['misc']['profiler_enabled']
-
 
 # Set random seed for reproducibility
 pl.seed_everything(seed)
