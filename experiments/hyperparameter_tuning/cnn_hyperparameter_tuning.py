@@ -13,6 +13,11 @@ from pytorch_lightning.loggers import TensorBoardLogger
 from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
 from pytorch_lightning.profilers import SimpleProfiler
 
+# Add the project root directory to the Python path
+script_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.abspath(os.path.join(script_dir, '..', '..'))
+sys.path.append(project_root)
+
 from utils.data_loading import get_dataset, get_dataloader, create_transform
 from models.cnn_model import CNNModel, CNNModelConfig
 
