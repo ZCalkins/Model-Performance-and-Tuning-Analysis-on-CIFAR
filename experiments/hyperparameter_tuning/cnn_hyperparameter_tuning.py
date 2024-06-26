@@ -259,7 +259,7 @@ def objective(trial):
     trainer = pl.Trainer(
         logger=loggers,
         max_epochs=num_epochs,
-        gpus=1 if device.type == 'cuda' else 0,
+        gpus=1 if device == 'cuda' else 0,
         precision=16 if config['misc']['use_mixed_precision'] else 32,
         deterministic=config['misc']['deterministic'],
         profiler=profiler,
