@@ -11,7 +11,7 @@ from torch.utils.data import Subset
 import torchmetrics
 from pytorch_lightning.loggers import TensorBoardLogger
 from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
-from pytorch_lightning.profiler import SimpleProfiler
+from pytorch_lightning.profilers import SimpleProfiler
 
 from utils.data_loading import get_dataset, get_dataloader, create_transform
 from models.vit_model import ViTModel, ViTModelConfig
