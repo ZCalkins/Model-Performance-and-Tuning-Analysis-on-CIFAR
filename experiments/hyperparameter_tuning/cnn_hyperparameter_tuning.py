@@ -271,11 +271,11 @@ def objective(trial):
         precision=16 if config['misc']['use_mixed_precision'] else 32,
         deterministic=config['misc']['deterministic'],
         profiler=profiler,
-        callbacks=[early_stopping, checkpoint_callback],
-        resume_from_checkpoint=config['experiment']['resume_checkpoint']
+        callbacks=[early_stopping, checkpoint_callback]
     )
 
-    trainer.fit(model, datamodule=data_module)
+    ckpt_path = config['experiment'].get('resume_checkpoint', None)
+    trainer.fit(model, datamodule=data_module, ckpt_path=ckpt_path)
     val_result = trainer.validate(model, datamodule=data_module)
     val_loss = val_result[0]['val_loss']
 
