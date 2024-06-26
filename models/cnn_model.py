@@ -17,12 +17,19 @@ class CNNLayerConfig:
     use_pool: bool = False
     pool_size: Optional[int] = 2
     pool_stride: Optional[int] = 2
-    pool_type: Optional[str] = 'max'
+    pool_type: Optional[str] = 'MaxPool2d'
     use_dropout: bool = False
     dropout_rate: Optional[float] = 0.0
     activation: str = 'ReLU'
     norm_layer: Optional[str] = None
     norm_params: Dict[str, Any] = field(default_factory=dict)
+
+    @property
+    def pool_params(self):
+        return {
+            'kernel_size': self.pool_size,
+            'stride': self.pool_stride,
+        }
 
 @gin.configurable
 @dataclass
@@ -80,7 +87,7 @@ class CNNModel(nn.Module):
             if layer_config.use_pool and layer_config.pool_type:
                 pool_module = importlib.import_module('torch.nn')
                 PoolClass = getattr(pool_module, layer_config.pool_type)
-                pool = PoolClass(**layer_config.pool_params)
+                pool = PoolClass(kernel_size=layer_config.pool_size, stride=layer_config.pool_stride)
                 modules.append(pool)
             
             # Optional Dropout
