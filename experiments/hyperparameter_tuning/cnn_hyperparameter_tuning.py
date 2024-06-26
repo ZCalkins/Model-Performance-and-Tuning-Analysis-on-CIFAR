@@ -34,7 +34,6 @@ from utils.data_loading import get_dataset, get_dataloader, create_transform
 from models.cnn_model import CNNModel, CNNModelConfig, CNNLayerConfig
 
 # Set up general configurations
-device = "cuda" if torch.cuda.is_available() else "cpu"
 seed = config['general']['seed']
 num_workers = config['general']['num_workers']
 deterministic = config['misc']['deterministic']
@@ -81,6 +80,14 @@ else:
 
 # Create data transform
 transform = create_transform(transform_type='standard', size=224, normalize=True, flatten=False)
+
+# Check if CUDA is available and set devices and accelerator accordingly
+if torch.cuda.is_available():
+    devices = 1
+    accelerator = 'cuda'
+else:
+    devices = 1
+    accelerator = 'cpu'
 
 class LitCNNModel(pl.LightningModule):
     def __init__(self, config: CNNModelConfig):
@@ -259,8 +266,8 @@ def objective(trial):
     trainer = pl.Trainer(
         logger=loggers,
         max_epochs=num_epochs,
-        gpus=1 if device == 'cuda' else 0,
-        accelerator='gpu' if device == 'cuda' else 'cpu',
+        devices=devices,
+        accelerator=accelerator,
         precision=16 if config['misc']['use_mixed_precision'] else 32,
         deterministic=config['misc']['deterministic'],
         profiler=profiler,
