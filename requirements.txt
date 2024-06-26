@@ -1,0 +1,6 @@
+numpy==1.23.2
+optuna==3.6.1
+pytorch_lightning==2.3.0
+torch==1.13.1
+torchmetrics==1.4.0.post0
+torchvision==0.15.2
