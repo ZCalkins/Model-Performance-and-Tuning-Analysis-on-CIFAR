@@ -35,7 +35,6 @@ from models.cnn_model import CNNModel, CNNModelConfig, CNNLayerConfig
 
 # Set up general configurations
 device = "cuda" if torch.cuda.is_available() else "cpu"
-torch.set_default_device(device)
 seed = config['general']['seed']
 num_workers = config['general']['num_workers']
 deterministic = config['misc']['deterministic']
