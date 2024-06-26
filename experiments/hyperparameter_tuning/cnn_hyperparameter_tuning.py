@@ -214,6 +214,7 @@ def create_cnn_config(trial):
     label_smoothing = trial.suggest_float('label_smoothing', 0.0, 0.2)
 
     cnn_config = CNNModelConfig(
+        model_name=config['experiment']['name'],
         layers=layers,
         input_shape=(3, 32, 32),
         output_shape=100,
