@@ -1,1 +1,42 @@
-
+general:
+  device: "cuda" if torch.cuda.is_available() else "cpu"
+  seed: 42
+  num_workers: 4
+experiment:
+  name: "CNN_Advanced_Ablation_Analysis_CIFAR100"
+  description: "CNN advanced feature ablation analysis on the CIFAR100 dataset"
+  save_dir: "results/advanced_feature_ablation/cnn"
+  log_dir: "logs/tensorboard/advanced_feature_ablation/cnn"
+  checkpoints_dir: "checkpoints/advanced_feature_ablation/cnn"
+  resume_checkpoint: null
+logging:
+  level: "INFO"
+  # Change level to "DEBUG" for debugging to provide more detailed info
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  log_to_file: False
+  # when set to "True" saves log messages to a file for later review (useful for debugging)
+  log_to_console: False
+  # set to "True" to print the log messages to the console when run for real-time monitoring
+monitoring:
+  tensorboard: True
+checkpointing:
+  save_best_only: True
+  monitor_metric: "val_loss"
+  save_freq: "epoch"
+  max_checkpoints: 5
+early_stopping:
+  enabled: True
+  monitor: "val_loss"
+  patience: 5
+  min_delta: 0.001
+evaluation:
+  metrics: ["accuracy", "precision", "recall", "f1"]
+  batch_size: 32
+  num_workers: 4
+misc:
+  debug: False
+  use_mixed_precision: True
+  deterministic: False
+  smaller_dataset: False
+  num_epochs_debug: 2
+  profiler_enabled: False
