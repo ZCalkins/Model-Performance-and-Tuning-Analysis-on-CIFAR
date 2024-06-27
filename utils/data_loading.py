@@ -33,12 +33,17 @@ def create_transform(transform_type='standard', size=224, normalize=True, flatte
 
 # Datasets
 @gin.configurable
-def get_dataset(name='CIFAR100', train=True, transform=None):
+def get_dataset(name='CIFAR100', train=True, transform=None, transform_config=None):
     dataset_classes = {
+        'CIFAR10': datasets.CIFAR10,
         'CIFAR100': datasets.CIFAR100
     }
-    
-    dataset = dataset_classes[name](root='data/cifar100', train=train, download=True, transform=transform)
+
+    if transform_config is not None:
+        transform = create_transform(**transform_config)
+
+    root_dir = f'data/{name.lower()}'
+    dataset = dataset_classes[name](root=root_dir, train=train, download=True, transform=transform)
     return dataset
 
 # DataLoaders
