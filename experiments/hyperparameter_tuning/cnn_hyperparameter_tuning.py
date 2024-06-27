@@ -24,7 +24,7 @@ config_file_path = os.path.join(project_root, 'configurations', 'yaml', 'hyperpa
 with open(config_file_path, 'r') as file:
     config = yaml.safe_load(file)
 
-# Convert necessary paths to absolute paths
+# Convert necessary relative paths to absolute paths
 config['experiment']['log_dir'] = os.path.join(project_root, config['experiment']['log_dir'])
 config['experiment']['checkpoints_dir'] = os.path.join(project_root, config['experiment']['checkpoints_dir'])
 config['experiment']['save_dir'] = os.path.join(project_root, config['experiment']['save_dir'])
