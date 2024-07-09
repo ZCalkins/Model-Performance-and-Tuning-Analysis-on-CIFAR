@@ -24,8 +24,6 @@ config_file_path = os.path.join(project_root, 'configurations', 'yaml', 'hyperpa
 with open(config_file_path, 'r') as file:
     config = yaml.safe_load(file)
 
-
-
 # Convert necessary relative paths to absolute paths
 experiment_type = 'hyperparameter_tuning'
 dataset = 'cifar100'
@@ -87,7 +85,7 @@ else:
 # Create data transform
 transform = create_transform(transform_type='standard', size=224, normalize=True, flatten=False)
 
-# Check if CUDA is available and set devices and accelerator accordingly
+# Check if CUDA is available and set the devices and accelerator accordingly
 if torch.cuda.is_available():
     devices = 1
     accelerator = 'cuda'
