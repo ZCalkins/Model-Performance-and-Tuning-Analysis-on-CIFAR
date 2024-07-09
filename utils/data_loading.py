@@ -39,9 +39,11 @@ def get_dataset(name='CIFAR100', train=True, transform=None, transform_config=No
         'CIFAR100': datasets.CIFAR100
     }
 
-    if transform_config is not None:
+    if transform_config is not None and isinstance(transform_config, dict):
         transform = create_transform(**transform_config)
-
+    else transform is None:
+        transform = create_transform()
+    
     root_dir = f'data/{name.lower()}'
     dataset = dataset_classes[name](root=root_dir, train=train, download=True, transform=transform)
     return dataset
