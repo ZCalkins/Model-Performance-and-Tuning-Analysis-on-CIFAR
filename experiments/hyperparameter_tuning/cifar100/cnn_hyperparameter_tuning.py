@@ -148,20 +148,21 @@ class LitCNNModel(pl.LightningModule):
         return optimizer
 
 class CIFAR100DataModule(pl.LightningDataModule):
-    def __init__(self, batch_size, num_workers, transform, use_smaller_dataset):
+    def __init__(self, batch_size, num_workers, transform, use_smaller_dataset, transform_config=None):
         super().__init__()
         self.batch_size = batch_size
         self.num_workers = num_workers
         self.transform = transform
         self.use_smaller_dataset = use_smaller_dataset
+        self.transform_config = transform_config
 
     def prepare_data(self):
-        get_dataset(name='CIFAR100', train=True, transform_config=self.transform)
-        get_dataset(name='CIFAR100', train=False, transform_config=self.transform)
+        get_dataset(name='CIFAR100', train=True, transform_config=self.transform, transform_config=self.transform_config)
+        get_dataset(name='CIFAR100', train=False, transform_config=self.transform, transform_config=self.transform_config)
 
     def setup(self, stage=None):
-        train_dataset = get_dataset(name='CIFAR100', train=True, transform_config=self.transform)
-        val_dataset = get_dataset(name='CIFAR100', train=False, transform_config=self.transform)
+        train_dataset = get_dataset(name='CIFAR100', train=True, transform_config=self.transform, transform_config=self.transform_config)
+        val_dataset = get_dataset(name='CIFAR100', train=False, transform_config=self.transform, transform_config=self.transform_config)
 
         if self.use_smaller_dataset:
             train_dataset = Subset(train_dataset, range(len(train_dataset) // 10))
