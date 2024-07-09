@@ -16,19 +16,25 @@ from pytorch_lightning.profilers import SimpleProfiler
 
 # Add the project root directory to the Python path
 script_dir = os.path.dirname(os.path.abspath(__file__))
-project_root = os.path.abspath(os.path.join(script_dir, '..', '..'))
+project_root = os.path.abspath(os.path.join(script_dir, '..', '..', '..'))
 sys.path.append(project_root)
 
 # Load the experiment configuration
-config_file_path = os.path.join(project_root, 'configurations', 'yaml', 'hyperparameter_tuning', 'cnn_hyperparameter_tuning.yaml')
+config_file_path = os.path.join(project_root, 'configurations', 'yaml', 'hyperparameter_tuning', 'cifar100', 'cnn.yaml')
 with open(config_file_path, 'r') as file:
     config = yaml.safe_load(file)
 
+
+
 # Convert necessary relative paths to absolute paths
-config['experiment']['log_dir'] = os.path.join(project_root, config['experiment']['log_dir'])
-config['experiment']['checkpoints_dir'] = os.path.join(project_root, config['experiment']['checkpoints_dir'])
-config['experiment']['save_dir'] = os.path.join(project_root, config['experiment']['save_dir'])
-config['experiment']['tensorboard_log_dir'] = os.path.join(project_root, config['experiment']['tensorboard_log_dir'])
+experiment_type = 'hyperparameter_tuning'
+dataset = 'cifar100'
+model_type = 'cnn'
+
+config['experiment']['log_dir'] = os.path.join(project_root, 'logs', 'experiment_logs', experiment_type, dataset, model_type)
+config['experiment']['checkpoints_dir'] = os.path.join(project_root, 'checkpoints', experiment_type, dataset, model_type)
+config['experiment']['save_dir'] = os.path.join(project_root, 'results', experiment_type, dataset, model_type)
+config['experiment']['tensorboard_log_dir'] = os.path.join(project_root, 'logs', 'tensorboard', experiment_type, dataset, model_type)
 
 from utils.data_loading import get_dataset, get_dataloader, create_transform
 from models.cnn_model import CNNModel, CNNModelConfig, CNNLayerConfig
