@@ -4,10 +4,10 @@ general:
 experiment:
   name: "CNN_Hyperparameter_Tuning_CIFAR100"
   description: "CNN hyperparameter tuning on the CIFAR100 dataset"
-  save_dir: "./results/hyperparameter_tuning/cnn"
-  log_dir: "./logs/experiment_logs/hyperparameter_tuning/cnn"
-  tensorboard_log_dir: "./logs/tensorboard/hyperparameter_tuning/cnn"
-  checkpoints_dir: "checkpoints/hyperparameter_tuning/cnn"
+  save_dir: "./results/hyperparameter_tuning/cifar100/cnn"
+  log_dir: "./logs/experiment_logs/hyperparameter_tuning/cifar100/cnn"
+  tensorboard_log_dir: "./logs/tensorboard/hyperparameter_tuning/cifar100/cnn"
+  checkpoints_dir: "checkpoints/hyperparameter_tuning/cifar100/cnn"
   resume_checkpoint: null
 logging:
   level: "INFO"
