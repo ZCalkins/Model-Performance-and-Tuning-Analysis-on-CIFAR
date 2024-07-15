@@ -37,6 +37,5 @@ misc:
   debug: False
   use_mixed_precision: True
   deterministic: False
-  use_smaller_dataset: False
   num_epochs_debug: 5
   profiler_enabled: False
