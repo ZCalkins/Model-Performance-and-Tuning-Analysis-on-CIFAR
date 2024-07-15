@@ -12,16 +12,16 @@ experiment:
 logging:
   level: "INFO"
   format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-  log_to_file: True
-  log_to_console: True
+  log_to_file: true
+  log_to_console: true
 monitoring:
-  tensorboard: True
+  tensorboard: true
 checkpointing:
-  save_best_only: True
+  save_best_only: true
   monitor_metric: "val_loss"
   max_checkpoints: 5
 early_stopping:
-  enabled: True
+  enabled: true
   monitor: "val_loss"
   patience: 5
   min_delta: 0.001
@@ -34,8 +34,9 @@ evaluation:
   batch_size: 32
   num_workers: 4
 misc:
-  debug: False
-  use_mixed_precision: True
-  deterministic: False
+  debug: false
+  use_mixed_precision: true
+  deterministic: false
   num_epochs_debug: 5
-  profiler_enabled: False
+  profiler_enabled: false
+  smaller_dataset: false
