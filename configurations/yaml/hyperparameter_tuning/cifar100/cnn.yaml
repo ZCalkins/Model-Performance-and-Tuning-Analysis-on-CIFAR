@@ -39,4 +39,4 @@ misc:
   deterministic: false
   num_epochs_debug: 5
   profiler_enabled: false
-  smaller_dataset: false
+  use_smaller_dataset: false
