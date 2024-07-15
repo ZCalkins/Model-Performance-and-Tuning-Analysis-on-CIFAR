@@ -34,7 +34,7 @@ config['experiment']['checkpoints_dir'] = os.path.join(project_root, 'checkpoint
 config['experiment']['save_dir'] = os.path.join(project_root, 'results', experiment_type, dataset, model_type)
 config['experiment']['tensorboard_log_dir'] = os.path.join(project_root, 'logs', 'tensorboard', experiment_type, dataset, model_type)
 
-from utils.data_loading import get_dataset, get_dataloader, create_transform
+from utils.data_loading import get_dataset, get_dataloader
 from models.cnn_model import CNNModel, CNNModelConfig, CNNLayerConfig
 
 # Set up general configurations
@@ -81,9 +81,6 @@ if config['misc']['debug']:
 else:
     num_epochs = config['hyperparameter_optimization']['n_trials']
     profiler = None
-
-# Create data transform
-transform = create_transform(transform_type='standard', size=224, normalize=True, flatten=False)
 
 # Check if CUDA is available and set the devices and accelerator accordingly
 if torch.cuda.is_available():
@@ -148,21 +145,50 @@ class LitCNNModel(pl.LightningModule):
         return optimizer
 
 class CIFAR100DataModule(pl.LightningDataModule):
-    def __init__(self, batch_size, num_workers, transform, use_smaller_dataset, transform_config=None):
+    def __init__(self,
+                 batch_size,
+                 num_workers,
+                 transform_type='standard',
+                 size=224,
+                 normalize=True,
+                 flatten=False,
+                 use_smaller_dataset=False):
         super().__init__()
         self.batch_size = batch_size
         self.num_workers = num_workers
-        self.transform = transform
+        self.transform_type = transform_type
+        self.size = size
+        self.normalize = normalize
+        self.flatten = flatten
         self.use_smaller_dataset = use_smaller_dataset
-        self.transform_config = transform_config
 
     def prepare_data(self):
-        get_dataset(name='CIFAR100', train=True, transform_config=self.transform, transform_config=self.transform_config)
-        get_dataset(name='CIFAR100', train=False, transform_config=self.transform, transform_config=self.transform_config)
+        get_dataset(name='CIFAR100',
+                    train=True,
+                    transform_type=self.transform_type,
+                    size=self.size,
+                    normalize=self.normalize,
+                    flatten=self.flatten)
+        get_dataset(name='CIFAR100',
+                    train=False,
+                    transform_type=self.transform_type,
+                    size=self.size,
+                    normalize=self.normalize,
+                    flatten=self.flatten)
 
     def setup(self, stage=None):
-        train_dataset = get_dataset(name='CIFAR100', train=True, transform_config=self.transform, transform_config=self.transform_config)
-        val_dataset = get_dataset(name='CIFAR100', train=False, transform_config=self.transform, transform_config=self.transform_config)
+        train_dataset = get_dataset(name='CIFAR100',
+                                    train=True,
+                                    transform_type=self.transform_type,
+                                    size=self.size,
+                                    normalize=self.normalize,
+                                    flatten=self.flatten)
+        val_dataset = get_dataset(name='CIFAR100',
+                                  train=False,
+                                  transform_type=self.transform_type,
+                                  size=self.size,
+                                  normalize=self.normalize,
+                                  flatten=self.flatten)
 
         if self.use_smaller_dataset:
             train_dataset = Subset(train_dataset, range(len(train_dataset) // 10))
@@ -242,10 +268,16 @@ def create_cnn_config(trial):
 def objective(trial):
     cnn_config = create_cnn_config(trial)
 
+    # Suggest transform type: 'augmented' or 'standard'
+    transform_type = trial.suggest_categorical('transform_type', ['standard', 'augmented'])
+    
     data_module = CIFAR100DataModule(
         batch_size=cnn_config.batch_size,
         num_workers=num_workers,
-        transform=transform,
+        transform_type=transform_type,
+        size=224,
+        normalize=True,
+        flatten=False,
         use_smaller_dataset=use_smaller_dataset
     )
     model = LitCNNModel(config=cnn_config)
