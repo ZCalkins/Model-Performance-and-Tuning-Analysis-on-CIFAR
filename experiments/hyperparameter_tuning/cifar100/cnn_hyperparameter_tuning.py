@@ -41,7 +41,7 @@ from models.cnn_model import CNNModel, CNNModelConfig, CNNLayerConfig
 seed = config['general']['seed']
 num_workers = config['general']['num_workers']
 deterministic = config['misc']['deterministic']
-use_smaller_dataset = config['misc']['smaller_dataset']
+use_smaller_dataset = config['misc']['use_smaller_dataset']
 num_epochs_debug = config['misc']['num_epochs_debug']
 profiler_enabled = config['misc']['profiler_enabled']
 
@@ -154,13 +154,13 @@ class CIFAR100DataModule(pl.LightningDataModule):
                  flatten=False,
                  use_smaller_dataset=False):
         super().__init__()
-        self.batch_size = batch_size
-        self.num_workers = num_workers
-        self.transform_type = transform_type
-        self.size = size
-        self.normalize = normalize
-        self.flatten = flatten
-        self.use_smaller_dataset = use_smaller_dataset
+        self.batch_size=batch_size
+        self.num_workers=num_workers
+        self.transform_type=transform_type
+        self.size=size
+        self.normalize=normalize
+        self.flatten=flatten
+        self.use_smaller_dataset=use_smaller_dataset
 
     def prepare_data(self):
         get_dataset(name='CIFAR100',
