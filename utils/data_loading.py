@@ -1,49 +1,46 @@
 import torch
 from torch.utils.data import DataLoader
 import torchvision.datasets as datasets
-import torchvision.transforms as transforms
+from torchvision.transforms import v2
 import gin
-
-# Data Transformation
-@gin.configurable
-def create_transform(transform_type='standard', size=224, normalize=True, flatten=False):
-    transformations = []
-    
-    if transform_type == 'augmented':
-        transformations.extend([
-            transforms.RandomResizedCrop(size),
-            transforms.RandomHorizontalFlip(),
-            transforms.AutoAugment(),
-        ])
-    else:
-        transformations.extend([
-            transforms.Resize(size),
-            transforms.CenterCrop(size),
-        ])
-    
-    transformations.append(transforms.ToTensor())
-    
-    if normalize:
-        transformations.append(transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]))
-    
-    if flatten:
-        transformations.append(transforms.Lambda(lambda x: torch.flatten(x)))
-    
-    return transforms.Compose(transformations)
 
 # Datasets
 @gin.configurable
-def get_dataset(name='CIFAR100', train=True, transform=None, transform_config=None):
+def get_dataset(name='CIFAR100',
+                train=True,
+                transform_type='standard',
+                size=224,
+                normalize=True,
+                flatten=False):
     dataset_classes = {
         'CIFAR10': datasets.CIFAR10,
         'CIFAR100': datasets.CIFAR100
     }
 
-    if transform_config is not None and isinstance(transform_config, dict):
-        transform = create_transform(**transform_config)
-    else transform is None:
-        transform = create_transform()
-    
+    # Create transformations
+    transformations = []
+    if transform_type == 'augmented':
+        transformations.extend([
+            v2.RandomResizedCrop(size),
+            v2.RandomHorizontalFlip(),
+            v2.AutoAugment(),
+        ])
+    else:
+        transformations.extend([
+            v2.Resize(size),
+            v2.CenterCrop(size),
+        ])
+
+    transformations.append(v2.ToTensor())
+
+    if normalize:
+        transformations.append(v2.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]))
+
+    if flatten:
+        transformations.append(v2.Lambda(lambda x: torch.flatten(x)))
+
+    transform = v2.Compose(transformations)
+                    
     root_dir = f'data/{name.lower()}'
     dataset = dataset_classes[name](root=root_dir, train=train, download=True, transform=transform)
     return dataset
