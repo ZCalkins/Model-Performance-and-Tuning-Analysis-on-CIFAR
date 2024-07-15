@@ -37,7 +37,6 @@ misc:
   debug: False
   use_mixed_precision: True
   deterministic: False
-  additional_config: "path_to_additional_config.yaml"
-  smaller_dataset: False
+  use_smaller_dataset: False
   num_epochs_debug: 5
   profiler_enabled: False
