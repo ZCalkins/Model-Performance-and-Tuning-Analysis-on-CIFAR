@@ -9,7 +9,7 @@ import gin
 def get_dataset(name='CIFAR100',
                 train=True,
                 transform_type='standard',
-                size=224,
+                size=32,
                 normalize=True,
                 flatten=False):
     dataset_classes = {
