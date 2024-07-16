@@ -212,9 +212,9 @@ def create_cnn_config(trial):
     in_channels = 3
 
     for i in range(num_layers):
-        out_channels = trial.suggest_int(f'out_channels_{i}', 16, 128, step=16)
+        out_channels = trial.suggest_int(f'out_channels_{i}', 64, 256, step=16)
         kernel_size = trial.suggest_int(f'kernel_size_{i}', 3, 7, step=2)
-        stride = trial.suggest_int(f'stride_{i}', 1, 3)
+        stride = trial.suggest_int(f'stride_{i}', 1, 2)
         padding = trial.suggest_int(f'padding_{i}', 0, 3)
         use_batch_norm = trial.suggest_categorical(f'use_batch_norm_{i}', [True, False])
         use_pool = trial.suggest_categorical(f'use_pool_{i}', [True, False])
