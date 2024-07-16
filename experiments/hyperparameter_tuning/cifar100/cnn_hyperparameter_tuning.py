@@ -250,9 +250,9 @@ def create_cnn_config(trial):
         the kernel size from ever being larger than the input size
         which became an issue during initial runs.
         """
-        current_input_size = (current_input_size + 2 * padding - (kernel_size - 1) - 1) / stride + 1
+        current_input_size = (current_input_size + 2 * padding - (kernel_size - 1) - 1) // stride + 1
         if use_pool:
-            current_input_size = (current_input_size - pool_size) / pool_stride + 1
+            current_input_size = (current_input_size - pool_size) // pool_stride + 1
         current_input_size = max(1, current_input_size)
 
     optimizer_class = trial.suggest_categorical('optimizer_class', ['Adam', 'SGD'])
