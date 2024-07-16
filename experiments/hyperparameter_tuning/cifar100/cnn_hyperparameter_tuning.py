@@ -215,14 +215,14 @@ def create_cnn_config(trial):
     for i in range(num_layers):
         out_channels = trial.suggest_int(f'out_channels_{i}', 32, 256, step=16)
         
-        kernel_size = trial.suggest_int(f'kernel_size_{i}', max(3, min(current_input_size, 7)), step=2)
+        kernel_size = trial.suggest_int(f'kernel_size_{i}', 3, max(3, min(current_input_size, 7)), step=2)
         stride = trial.suggest_int(f'stride_{i}', 1, 2)
         padding = trial.suggest_int(f'padding_{i}', 0, 3)
         use_batch_norm = trial.suggest_categorical(f'use_batch_norm_{i}', [True, False])
         use_pool = trial.suggest_categorical(f'use_pool_{i}', [True, False])
         pool_type = trial.suggest_categorical(f'pool_type_{i}', ['MaxPool2d', 'AvgPool2d'])
-        pool_size = trial.suggest_int(f'pool_size_{i}', max(2, min(current_input_size, 3)))
-        pool_stride = trial.suggest_int(f'pool_stride_{i}', max(2, min(current_input_size, 3)))
+        pool_size = trial.suggest_int(f'pool_size_{i}', 2, max(2, min(current_input_size, 3)))
+        pool_stride = trial.suggest_int(f'pool_stride_{i}', 2, max(2, min(current_input_size, 3)))
         use_dropout = trial.suggest_categorical(f'use_dropout_{i}', [True, False])
         dropout_rate = trial.suggest_float(f'dropout_rate_{i}', 0.1, 0.5)
         activation = trial.suggest_categorical(f'activation_{i}', ['ReLU', 'LeakyReLU', 'SiLU'])
