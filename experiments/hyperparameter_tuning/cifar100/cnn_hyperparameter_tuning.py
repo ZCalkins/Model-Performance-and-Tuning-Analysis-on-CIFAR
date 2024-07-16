@@ -208,63 +208,67 @@ class CIFAR100DataModule(pl.LightningDataModule):
         return get_dataloader(self.val_dataset, batch_size=self.batch_size, shuffle=False, num_workers=self.num_workers)
 
 def create_cnn_config(trial):
-    num_layers = trial.suggest_int('num_layers', 6, 12)
-    layers = []
-    in_channels = 3
-
-    for i in range(num_layers):
-        out_channels = trial.suggest_int(f'out_channels_{i}', 32, 256, step=16)
-        kernel_size = trial.suggest_int(f'kernel_size_{i}', 3, 7, step=2)
-        stride = trial.suggest_int(f'stride_{i}', 1, 2)
-        padding = trial.suggest_int(f'padding_{i}', 0, 3)
-        use_batch_norm = trial.suggest_categorical(f'use_batch_norm_{i}', [True, False])
-        use_pool = trial.suggest_categorical(f'use_pool_{i}', [True, False])
-        pool_type = trial.suggest_categorical(f'pool_type_{i}', ['MaxPool2d', 'AvgPool2d'])
-        pool_size = trial.suggest_int(f'pool_size_{i}', 2, 3)
-        pool_stride = trial.suggest_int(f'pool_stride_{i}', 2, 3)
-        use_dropout = trial.suggest_categorical(f'use_dropout_{i}', [True, False])
-        dropout_rate = trial.suggest_float(f'dropout_rate_{i}', 0.1, 0.5)
-        activation = trial.suggest_categorical(f'activation_{i}', ['ReLU', 'LeakyReLU', 'SiLU'])
-
-        layer_config = CNNLayerConfig(
-            in_channels=in_channels,
-            out_channels=out_channels,
-            kernel_size=kernel_size,
-            stride=stride,
-            padding=padding,
-            use_batch_norm=use_batch_norm,
-            use_pool=use_pool,
-            pool_size=pool_size,
-            pool_stride=pool_stride,
-            pool_type=pool_type,
-            use_dropout=use_dropout,
-            dropout_rate=dropout_rate,
-            activation=activation
+    try:
+        num_layers = trial.suggest_int('num_layers', 6, 12)
+        layers = []
+        in_channels = 3
+    
+        for i in range(num_layers):
+            out_channels = trial.suggest_int(f'out_channels_{i}', 32, 256, step=16)
+            kernel_size = trial.suggest_int(f'kernel_size_{i}', 3, 7, step=2)
+            stride = trial.suggest_int(f'stride_{i}', 1, 2)
+            padding = trial.suggest_int(f'padding_{i}', 0, 3)
+            use_batch_norm = trial.suggest_categorical(f'use_batch_norm_{i}', [True, False])
+            use_pool = trial.suggest_categorical(f'use_pool_{i}', [True, False])
+            pool_type = trial.suggest_categorical(f'pool_type_{i}', ['MaxPool2d', 'AvgPool2d'])
+            pool_size = trial.suggest_int(f'pool_size_{i}', 2, 3)
+            pool_stride = trial.suggest_int(f'pool_stride_{i}', 2, 3)
+            use_dropout = trial.suggest_categorical(f'use_dropout_{i}', [True, False])
+            dropout_rate = trial.suggest_float(f'dropout_rate_{i}', 0.1, 0.5)
+            activation = trial.suggest_categorical(f'activation_{i}', ['ReLU', 'LeakyReLU', 'SiLU'])
+    
+            layer_config = CNNLayerConfig(
+                in_channels=in_channels,
+                out_channels=out_channels,
+                kernel_size=kernel_size,
+                stride=stride,
+                padding=padding,
+                use_batch_norm=use_batch_norm,
+                use_pool=use_pool,
+                pool_size=pool_size,
+                pool_stride=pool_stride,
+                pool_type=pool_type,
+                use_dropout=use_dropout,
+                dropout_rate=dropout_rate,
+                activation=activation
+            )
+            layers.append(layer_config)
+            in_channels = out_channels
+    
+        optimizer_class = trial.suggest_categorical('optimizer_class', ['Adam', 'SGD'])
+        optimizer_params = {'lr': trial.suggest_float('lr', 1e-5, 1e-1, log=True)}
+        if optimizer_class == 'SGD':
+            optimizer_params['momentum'] = trial.suggest_float('momentum', 0.5, 0.9)
+            optimizer_params['weight_decay'] = trial.suggest_float('weight_decay', 1e-6, 1e-2, log=True)
+    
+        label_smoothing = trial.suggest_float('label_smoothing', 0.0, 0.2)
+    
+        cnn_config = CNNModelConfig(
+            model_name=config['experiment']['name'],
+            layers=layers,
+            input_shape=(3, 32, 32),
+            output_shape=100,
+            optimizer_class=optimizer_class,
+            optimizer_params=optimizer_params,
+            batch_size=trial.suggest_int('batch_size', 32, 128, step=16),
+            num_epochs=trial.suggest_int('num_epochs', 10, 50),
+            label_smoothing=label_smoothing
         )
-        layers.append(layer_config)
-        in_channels = out_channels
+    
+        return cnn_config
 
-    optimizer_class = trial.suggest_categorical('optimizer_class', ['Adam', 'SGD'])
-    optimizer_params = {'lr': trial.suggest_float('lr', 1e-5, 1e-1, log=True)}
-    if optimizer_class == 'SGD':
-        optimizer_params['momentum'] = trial.suggest_float('momentum', 0.5, 0.9)
-        optimizer_params['weight_decay'] = trial.suggest_float('weight_decay', 1e-6, 1e-2, log=True)
-
-    label_smoothing = trial.suggest_float('label_smoothing', 0.0, 0.2)
-
-    cnn_config = CNNModelConfig(
-        model_name=config['experiment']['name'],
-        layers=layers,
-        input_shape=(3, 32, 32),
-        output_shape=100,
-        optimizer_class=optimizer_class,
-        optimizer_params=optimizer_params,
-        batch_size=trial.suggest_int('batch_size', 32, 128, step=16),
-        num_epochs=trial.suggest_int('num_epochs', 10, 50),
-        label_smoothing=label_smoothing
-    )
-
-    return cnn_config
+    except Exception as e:
+        raise optuna.exceptions.TrialPruned(f"Pruning trial. Misstep in configuration creation: {e}")
 
 def objective(trial):
     cnn_config = create_cnn_config(trial)
