@@ -149,7 +149,7 @@ class CIFAR100DataModule(pl.LightningDataModule):
                  batch_size,
                  num_workers,
                  transform_type='standard',
-                 size=32,
+                 size=224,
                  normalize=True,
                  flatten=False,
                  use_smaller_dataset=False):
@@ -210,7 +210,7 @@ def create_cnn_config(trial):
     num_layers = trial.suggest_int('num_layers', 6, 18)
     layers = []
     in_channels = 3
-    current_input_size = 32
+    current_input_size = 224
 
     for i in range(num_layers):
         out_channels = trial.suggest_int(f'out_channels_{i}', 32, 256, step=16)
