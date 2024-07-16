@@ -9,7 +9,7 @@ import gin
 def get_dataset(name='CIFAR100',
                 train=True,
                 transform_type='standard',
-                size=32,
+                size=224,
                 normalize=True,
                 flatten=False):
     dataset_classes = {
@@ -21,7 +21,7 @@ def get_dataset(name='CIFAR100',
     transformations = []
     if transform_type == 'augmented':
         transformations.extend([
-            v2.RandomResizedCrop(size),
+            v2.RandomResizedCrop(size, scale=(0.8, 1.0)),
             v2.RandomHorizontalFlip(),
             v2.AutoAugment(),
         ])
