@@ -287,7 +287,7 @@ def objective(trial):
         batch_size=cnn_config.batch_size,
         num_workers=num_workers,
         transform_type=transform_type,
-        size=32,
+        size=224,
         normalize=True,
         flatten=False,
         use_smaller_dataset=use_smaller_dataset
