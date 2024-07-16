@@ -149,7 +149,7 @@ class CIFAR100DataModule(pl.LightningDataModule):
                  batch_size,
                  num_workers,
                  transform_type='standard',
-                 size=224,
+                 size=32,
                  normalize=True,
                  flatten=False,
                  use_smaller_dataset=False):
@@ -207,20 +207,20 @@ class CIFAR100DataModule(pl.LightningDataModule):
         return get_dataloader(self.val_dataset, batch_size=self.batch_size, shuffle=False, num_workers=self.num_workers)
 
 def create_cnn_config(trial):
-    num_layers = trial.suggest_int('num_layers', 6, 18)
+    num_layers = trial.suggest_int('num_layers', 6, 12)
     layers = []
     in_channels = 3
 
     for i in range(num_layers):
         out_channels = trial.suggest_int(f'out_channels_{i}', 16, 128, step=16)
-        kernel_size = trial.suggest_int(f'kernel_size_{i}', 3, 7, step=2)
+        kernel_size = trial.suggest_int(f'kernel_size_{i}', 3, 5), step=2)
         stride = trial.suggest_int(f'stride_{i}', 1, 3)
         padding = trial.suggest_int(f'padding_{i}', 0, 3)
         use_batch_norm = trial.suggest_categorical(f'use_batch_norm_{i}', [True, False])
         use_pool = trial.suggest_categorical(f'use_pool_{i}', [True, False])
         pool_type = trial.suggest_categorical(f'pool_type_{i}', ['MaxPool2d', 'AvgPool2d'])
         pool_size = trial.suggest_int(f'pool_size_{i}', 2, 3)
-        pool_stride = trial.suggest_int(f'pool_stride_{i}', 2, 3)
+        pool_stride = trial.suggest_int(f'pool_stride_{i}', 1, 3)
         use_dropout = trial.suggest_categorical(f'use_dropout_{i}', [True, False])
         dropout_rate = trial.suggest_float(f'dropout_rate_{i}', 0.1, 0.5)
         activation = trial.suggest_categorical(f'activation_{i}', ['ReLU', 'LeakyReLU', 'SiLU'])
@@ -268,14 +268,14 @@ def create_cnn_config(trial):
 def objective(trial):
     cnn_config = create_cnn_config(trial)
 
-    # Suggest transform type: 'augmented' or 'standard'
+    # Suggest image transform
     transform_type = trial.suggest_categorical('transform_type', ['standard', 'augmented'])
     
     data_module = CIFAR100DataModule(
         batch_size=cnn_config.batch_size,
         num_workers=num_workers,
         transform_type=transform_type,
-        size=224,
+        size=32,
         normalize=True,
         flatten=False,
         use_smaller_dataset=use_smaller_dataset
