@@ -129,7 +129,7 @@ class LitCNNModel(pl.LightningModule):
         self.val_accuracy(logits, y)
         self.val_precision(logits, y)
         self.val_recall(logits, y)
-        self.f1(logits, y)
+        self.val_f1(logits, y)
         self.log('val_acc', self.val_accuracy, prog_bar=True, on_epoch=True)
         self.log('val_precision', self.val_precision, prog_bar=True, on_epoch=True)
         self.log('val_recall', self.val_recall, prog_bar=True, on_epoch=True)
