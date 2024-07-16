@@ -249,7 +249,7 @@ def create_cnn_config(trial):
             layers.append(layer_config)
             in_channels = out_channels
 
-            current_input_size = (current_input_size + 2 * padding - (kernel_size - 1) - 1 // stride + 1
+            current_input_size = (current_input_size + 2 * padding - (kernel_size - 1) - 1) // stride + 1
             if use_pool:
                 current_input_size = (current_input_size - pool_size) // pool_stride + 1
             if current_input_size <= 0:
