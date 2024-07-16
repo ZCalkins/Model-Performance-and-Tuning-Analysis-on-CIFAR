@@ -213,15 +213,16 @@ def create_cnn_config(trial):
     current_input_size = 32
 
     for i in range(num_layers):
-        out_channels = trial.suggest_int(f'out_channels_{i}', 16, 128, step=16)
-        kernel_size = trial.suggest_int(f'kernel_size_{i}', 3, min(current_input_size, 7), step=2)
+        out_channels = trial.suggest_int(f'out_channels_{i}', 32, 256, step=16)
+        
+        kernel_size = trial.suggest_int(f'kernel_size_{i}', max(3, min(current_input_size, 7)), step=2)
         stride = trial.suggest_int(f'stride_{i}', 1, 2)
         padding = trial.suggest_int(f'padding_{i}', 0, 3)
         use_batch_norm = trial.suggest_categorical(f'use_batch_norm_{i}', [True, False])
         use_pool = trial.suggest_categorical(f'use_pool_{i}', [True, False])
         pool_type = trial.suggest_categorical(f'pool_type_{i}', ['MaxPool2d', 'AvgPool2d'])
-        pool_size = trial.suggest_int(f'pool_size_{i}', 2, min(current_input_size, 3))
-        pool_stride = trial.suggest_int(f'pool_stride_{i}', 2, min(current_input_size, 3))
+        pool_size = trial.suggest_int(f'pool_size_{i}', max(2, min(current_input_size, 3)))
+        pool_stride = trial.suggest_int(f'pool_stride_{i}', max(2, min(current_input_size, 3)))
         use_dropout = trial.suggest_categorical(f'use_dropout_{i}', [True, False])
         dropout_rate = trial.suggest_float(f'dropout_rate_{i}', 0.1, 0.5)
         activation = trial.suggest_categorical(f'activation_{i}', ['ReLU', 'LeakyReLU', 'SiLU'])
@@ -244,11 +245,15 @@ def create_cnn_config(trial):
         layers.append(layer_config)
         in_channels = out_channels
 
-        # Updates input size dynamically
-        current_input_size = (current_input_size + 2 * padding - (kernel_size - 1) - 1) // stride + 1
+        """
+        This below will update the input size dynamically to prevent
+        the kernel size from ever being larger than the input size
+        which became an issue during initial runs.
+        """
+        current_input_size = (current_input_size + 2 * padding - (kernel_size - 1) - 1) / stride + 1
         if use_pool:
-            current_input_size = (current_input_size - pool_size) // pool_stride + 1
-        current_input_size = max(1, current_input_size)  # Ensures input size doesn't fall below 1
+            current_input_size = (current_input_size - pool_size) / pool_stride + 1
+        current_input_size = max(1, current_input_size)
 
     optimizer_class = trial.suggest_categorical('optimizer_class', ['Adam', 'SGD'])
     optimizer_params = {'lr': trial.suggest_float('lr', 1e-5, 1e-1, log=True)}
