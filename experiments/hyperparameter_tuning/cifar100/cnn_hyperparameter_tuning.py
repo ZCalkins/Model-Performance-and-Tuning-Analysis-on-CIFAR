@@ -221,7 +221,7 @@ def create_cnn_config(trial):
             
             if i < num_layers // 4:
                 kernel_size = 7
-            elif i < num_layers //2:
+            elif i < num_layers // 2:
                 kernel_size = 5
             else:
                 kernel_size = 3
