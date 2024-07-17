@@ -212,24 +212,37 @@ def create_cnn_config(trial):
         num_layers = trial.suggest_int('num_layers', 6, 12)
         layers = []
         in_channels = 3
-        current_input_size = 224
+
+        use_strided_conv = num_layers > 12
+        default_to_pooling = not use_strided_conv
     
         for i in range(num_layers):
             out_channels = trial.suggest_int(f'out_channels_{i}', 32, 256, step=16)
-            kernel_size = trial.suggest_int(f'kernel_size_{i}', 3, 7, step=2)
-            stride = trial.suggest_int(f'stride_{i}', 1, 2)
+            
+            if i < num_layers // 4:
+                kernel_size = 7
+            elif i < num_layers //2:
+                kernel_size = 5
+            else:
+                kernel_size = 3
+                
+            stride = trial.suggest_int(f'stride_{i}', 1, 2) if use_strided_conv else 1
             padding = trial.suggest_int(f'padding_{i}', 0, 3)
             use_batch_norm = trial.suggest_categorical(f'use_batch_norm_{i}', [True, False])
-            use_pool = trial.suggest_categorical(f'use_pool_{i}', [True, False])
-            pool_type = trial.suggest_categorical(f'pool_type_{i}', ['MaxPool2d', 'AvgPool2d'])
-            pool_size = trial.suggest_int(f'pool_size_{i}', 2, 3)
-            pool_stride = trial.suggest_int(f'pool_stride_{i}', 2, 3)
             use_dropout = trial.suggest_categorical(f'use_dropout_{i}', [True, False])
             dropout_rate = trial.suggest_float(f'dropout_rate_{i}', 0.1, 0.5)
             activation = trial.suggest_categorical(f'activation_{i}', ['ReLU', 'LeakyReLU', 'SiLU'])
 
-            if kernel_size > current_input_size:
-                raise TrialPruned(f"Kernel size {kernel_size} larger than input size {current_input_size}")
+            if default_to_pooling and i % 3 == 2:
+                use_pool = True
+                pool_type = trial.suggest_categorical(f'pool_type_{i}', ['MaxPool2d', 'AvgPool2d'])
+                pool_size = trial.suggest_int(f'pool_size_{i}', 2, 3)
+                pool_stride = trial.suggest_int(f'pool_stride_{i}', 2, 3)
+            else:
+                use_pool = False
+                pool_type = None
+                pool_size = None
+                pool_stride = None
     
             layer_config = CNNLayerConfig(
                 in_channels=in_channels,
@@ -248,12 +261,6 @@ def create_cnn_config(trial):
             )
             layers.append(layer_config)
             in_channels = out_channels
-
-            current_input_size = (current_input_size + 2 * padding - (kernel_size - 1) - 1) // stride + 1
-            if use_pool:
-                current_input_size = (current_input_size - pool_size) // pool_stride + 1
-            if current_input_size <= 0:
-                raise TrialPruned(f"Invalid input size after layer {i}: {curent_input_size}")
     
         optimizer_class = trial.suggest_categorical('optimizer_class', ['Adam', 'SGD'])
         optimizer_params = {'lr': trial.suggest_float('lr', 1e-5, 1e-1, log=True)}
@@ -277,13 +284,9 @@ def create_cnn_config(trial):
     
         return cnn_config
 
-    except TrialPruned as e:
-        print(f"Trial to be pruned: {e}")
-        raise e
-
     except Exception as e:
-        print(f"General error occurred: {e}")
-        raise TrialPruned(f"Pruning trial due to an outstanding error: {e}")
+        print(f"Pruning trial due to invalid configuration: {e}")
+        raise optuna.exceptions.TrialPruned()
 
 def objective(trial):
     cnn_config = create_cnn_config(trial)
