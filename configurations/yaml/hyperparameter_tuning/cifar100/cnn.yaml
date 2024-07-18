@@ -31,7 +31,7 @@ hyperparameter_optimization:
   direction: "minimize"
 evaluation:
   metrics: ["accuracy", "precision", "recall", "f1"]
-  batch_size: 256
+  batch_size: 32
   num_workers: 4
 misc:
   debug: false
