@@ -86,7 +86,7 @@ else:
 # Check if CUDA is available and set the devices and accelerator accordingly
 if torch.cuda.is_available():
     devices = 1
-    accelerator = 'cuda'
+    accelerator = 'gpu'
 else:
     devices = 1
     accelerator = 'cpu'
@@ -277,8 +277,8 @@ def create_cnn_config(trial):
             output_shape=100,
             optimizer_class=optimizer_class,
             optimizer_params=optimizer_params,
-            batch_size=trial.suggest_int('batch_size', 32, 128, step=16),
-            num_epochs=trial.suggest_int('num_epochs', 10, 50),
+            batch_size=trial.suggest_int('batch_size', 128, 256, step=16),
+            num_epochs=trial.suggest_int('num_epochs', 10, 30),
             label_smoothing=label_smoothing
         )
     
