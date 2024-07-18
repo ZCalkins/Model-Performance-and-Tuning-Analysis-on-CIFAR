@@ -292,10 +292,7 @@ def create_cnn_config(trial):
         raise optuna.exceptions.TrialPruned()
 
 def objective(trial):
-"""
-This below is to clear the GPU memory between trials, mitigating out-of-memory errors.
-Since I'm running on my local machine (average sized NVIDIA RTX 3070)
-"""
+    # Mitigation for out of memory errors
     torch.cuda.empty_cache()
     
     cnn_config = create_cnn_config(trial)
