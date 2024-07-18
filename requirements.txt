@@ -1,9 +1,6 @@
-numpy
-optuna
-pytorch-lightning
-torchmetrics
-torch
-torchvision
-pyyaml
-gin-config
-tensorboard
+numpy==2.0.0
+optuna==3.6.1
+pytorch_lightning==2.3.3
+torch==2.3.1+cu121
+torchmetrics==1.4.0.post0
+torchvision==0.18.1+cu121
