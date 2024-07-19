@@ -72,7 +72,7 @@ if config['logging']['log_to_console']:
 logging.basicConfig(level=log_level, format=log_format, handlers=handlers)
 
 logger = logging.getLogger('experiment_logger')
-logger.info("Logging configuration set up.")
+logger.info("Logging configurations have been set.")
 
 # Set debug mode if enabled
 if config['misc']['debug']:
