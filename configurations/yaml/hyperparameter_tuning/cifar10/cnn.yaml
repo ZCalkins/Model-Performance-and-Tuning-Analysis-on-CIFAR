@@ -1,1 +1,42 @@
-
+general:
+  seed: 42
+  num_workers: 4
+experiment:
+  name: "CNN_Hyperparameter_Tuning_CIFAR10"
+  description: "CNN hyperparameter tuning on the CIFAR10 dataset"
+  save_dir: "./results/hyperparameter_tuning/cifar10/cnn"
+  log_dir: "./logs/experiment_logs/hyperparameter_tuning/cifar10/cnn"
+  tensorboard_log_dir: "./logs/tensorboard/hyperparameter_tuning/cifar10/cnn"
+  checkpoints_dir: "checkpoints/hyperparameter_tuning/cifar10/cnn"
+  resume_checkpoint: null
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  log_to_file: true
+  log_to_console: true
+monitoring:
+  tensorboard: true
+checkpointing:
+  save_best_only: true
+  monitor_metric: "val_loss"
+  max_checkpoints: 5
+early_stopping:
+  enabled: true
+  monitor: "val_loss"
+  patience: 5
+  min_delta: 0.001
+hyperparameter_optimization:
+  n_trials: 100
+  pruner: "SuccessiveHalvingPruner"
+  direction: "minimize"
+evaluation:
+  metrics: ["accuracy", "precision", "recall", "f1"]
+  batch_size: 32
+  num_workers: 4
+misc:
+  debug: false
+  use_mixed_precision: false
+  deterministic: false
+  num_epochs_debug: 5
+  profiler_enabled: false
+  use_smaller_dataset: false
