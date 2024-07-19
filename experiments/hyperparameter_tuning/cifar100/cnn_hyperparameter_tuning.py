@@ -15,9 +15,6 @@ from pytorch_lightning.loggers import TensorBoardLogger
 from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
 from pytorch_lightning.profilers import SimpleProfiler
 
-# Set the matmul precision for Tensor Cores
-torch.set_float32_matmul_precision('medium')
-
 # Add the project root directory to the Python path
 script_dir = os.path.dirname(os.path.abspath(__file__))
 project_root = os.path.abspath(os.path.join(script_dir, '..', '..', '..'))
@@ -85,14 +82,6 @@ if config['misc']['debug']:
 else:
     num_epochs = config['hyperparameter_optimization']['n_trials']
     profiler = None
-
-# Check if CUDA is available and set the devices and accelerator accordingly
-if torch.cuda.is_available():
-    devices = 1
-    accelerator = 'gpu'
-else:
-    devices = 1
-    accelerator = 'cpu'
 
 class LitCNNModel(pl.LightningModule):
     def __init__(self, config: CNNModelConfig):
@@ -212,7 +201,7 @@ class CIFAR100DataModule(pl.LightningDataModule):
 
 def create_cnn_config(trial):
     try:
-        num_layers = trial.suggest_int('num_layers', 6, 12)
+        num_layers = trial.suggest_int('num_layers', 6, 18)
         layers = []
         in_channels = 3
 
@@ -280,8 +269,8 @@ def create_cnn_config(trial):
             output_shape=100,
             optimizer_class=optimizer_class,
             optimizer_params=optimizer_params,
-            batch_size=trial.suggest_int('batch_size', 32, 128, step=16),
-            num_epochs=trial.suggest_int('num_epochs', 10, 30),
+            batch_size=trial.suggest_int('batch_size', 32, 256, step=16),
+            num_epochs=trial.suggest_int('num_epochs', 10, 50),
             label_smoothing=label_smoothing
         )
     
@@ -332,8 +321,9 @@ def objective(trial):
     trainer = pl.Trainer(
         logger=loggers,
         max_epochs=num_epochs,
-        devices=devices,
-        accelerator=accelerator,
+        devices=8,
+        accelerator='gpu',
+        strategy='ddp',
         precision=16 if config['misc']['use_mixed_precision'] else 32,
         deterministic=config['misc']['deterministic'],
         profiler=profiler,
