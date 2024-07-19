@@ -282,7 +282,7 @@ def create_cnn_config(trial):
 
 def objective(trial):
     # Mitigation for out of memory errors
-    torch.cuda.empty_cache()
+    # torch.cuda.empty_cache()
     
     cnn_config = create_cnn_config(trial)
 
@@ -322,7 +322,7 @@ def objective(trial):
         logger=loggers,
         max_epochs=num_epochs,
         devices=8,
-        accelerator='gpu',
+        accelerator='auto',
         strategy='ddp',
         precision=16 if config['misc']['use_mixed_precision'] else 32,
         deterministic=config['misc']['deterministic'],
