@@ -321,9 +321,8 @@ def objective(trial):
     trainer = pl.Trainer(
         logger=loggers,
         max_epochs=num_epochs,
-        devices=8,
+        devices=1,
         accelerator='auto',
-        strategy='ddp',
         precision=16 if config['misc']['use_mixed_precision'] else 32,
         deterministic=config['misc']['deterministic'],
         profiler=profiler,
