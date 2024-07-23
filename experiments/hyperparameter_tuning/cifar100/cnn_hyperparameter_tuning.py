@@ -300,6 +300,10 @@ def objective(trial):
     )
     model = LitCNNModel(config=cnn_config)
 
+    # Dummy forward pass to initialize lazy modules
+    dummy_input = torch.zeros((1, 3, 32, 32)).to(model.device)
+    model(dummy_input)
+
     # Set up logging
     loggers = []
     if config['monitoring']['tensorboard']:
