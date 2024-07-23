@@ -137,6 +137,11 @@ class LitCNNModel(pl.LightningModule):
             optimizer = torch.optim.SGD(self.parameters(), **self.config.optimizer_params)
         return optimizer
 
+    def initialize_lazy_layers(self, input_shape, device):
+        dummy_input = torch.zeros(input_shape).to(device)
+        self.to(device)
+        self(dummy_input)
+
 class CIFAR100DataModule(pl.LightningDataModule):
     def __init__(self,
                  batch_size,
@@ -300,9 +305,9 @@ def objective(trial):
     )
     model = LitCNNModel(config=cnn_config)
 
-    # Dummy forward pass to initialize lazy modules
-    dummy_input = torch.zeros((1, 3, 32, 32)).to(model.device)
-    model(dummy_input)
+    # Define the device and manually initialize lazy layers
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    model.initialize_lazy_layers(input_shape=(1, 3, 32, 32), device=device)
 
     # Set up logging
     loggers = []
