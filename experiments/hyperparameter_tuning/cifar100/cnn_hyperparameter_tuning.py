@@ -143,7 +143,7 @@ class LitCNNModel(pl.LightningModule):
         self.to(device)
         self(dummy_input)
 
-        # Broadcasts parameters to mitigate "different parameters on different GPUs" errors
+        # Broadcasts parameters across GPUs
         if dist.is_initialized():
             for param in self.parameters():
                 dist.broadcast(param.data, src=0)
@@ -311,10 +311,6 @@ def objective(trial):
     )
     model = LitCNNModel(config=cnn_config)
 
-    # Define the device and manually initialize lazy layers
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    model.initialize_lazy_layers(input_shape=(1, 3, 224, 224), device=device)
-
     # Set up logging
     loggers = []
     if config['monitoring']['tensorboard']:
@@ -344,6 +340,13 @@ def objective(trial):
         profiler=profiler,
         callbacks=[early_stopping, checkpoint_callback]
     )
+
+
+    if dist.get_rank() == 0:
+        model.initialize_lazy_layers(input_shape=(1, 3, 224, 224), device=torch.device('cuda'))
+
+    if dist.is_initialized():
+        dist.barrier()
 
     ckpt_path = config['experiment'].get('resume_checkpoint', None)
     trainer.fit(model, datamodule=data_module, ckpt_path=ckpt_path)
