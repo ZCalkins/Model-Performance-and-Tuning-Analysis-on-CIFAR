@@ -142,6 +142,11 @@ class LitCNNModel(pl.LightningModule):
         self.to(device)
         self(dummy_input)
 
+        # Broadcasts parameters to mitigate "different parameters on different GPUs" errors
+        if dist.is_initialized():
+            for param in self.parameters():
+                dist.broadcast(param.data, src=0)
+
 class CIFAR100DataModule(pl.LightningDataModule):
     def __init__(self,
                  batch_size,
