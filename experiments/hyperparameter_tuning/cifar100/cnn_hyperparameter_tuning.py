@@ -201,7 +201,7 @@ class CIFAR100DataModule(pl.LightningDataModule):
 
 def create_cnn_config(trial):
     try:
-        num_layers = trial.suggest_int('num_layers', 6, 18)
+        num_layers = trial.suggest_int('num_layers', 6, 16)
         layers = []
         in_channels = 3
 
@@ -222,7 +222,7 @@ def create_cnn_config(trial):
             padding = trial.suggest_int(f'padding_{i}', 0, 3)
             use_batch_norm = trial.suggest_categorical(f'use_batch_norm_{i}', [True, False])
             use_dropout = trial.suggest_categorical(f'use_dropout_{i}', [True, False])
-            dropout_rate = trial.suggest_float(f'dropout_rate_{i}', 0.1, 0.5)
+            dropout_rate = trial.suggest_float(f'dropout_rate_{i}', 0.1, 0.5) if use_dropout else 0.0
             activation = trial.suggest_categorical(f'activation_{i}', ['ReLU', 'LeakyReLU', 'SiLU'])
 
             if default_to_pooling and i % 3 == 2:
@@ -269,8 +269,8 @@ def create_cnn_config(trial):
             output_shape=100,
             optimizer_class=optimizer_class,
             optimizer_params=optimizer_params,
-            batch_size=trial.suggest_int('batch_size', 32, 256, step=16),
-            num_epochs=trial.suggest_int('num_epochs', 10, 50),
+            batch_size=trial.suggest_int('batch_size', 32, 128, step=16),
+            num_epochs=trial.suggest_int('num_epochs', 10, 30),
             label_smoothing=label_smoothing
         )
     
@@ -282,7 +282,7 @@ def create_cnn_config(trial):
 
 def objective(trial):
     # Mitigation for out of memory errors
-    # torch.cuda.empty_cache()
+    torch.cuda.empty_cache()
     
     cnn_config = create_cnn_config(trial)
 
@@ -321,8 +321,9 @@ def objective(trial):
     trainer = pl.Trainer(
         logger=loggers,
         max_epochs=num_epochs,
-        devices=1,
+        devices=8,
         accelerator='auto',
+        strategy='ddp',
         precision=16 if config['misc']['use_mixed_precision'] else 32,
         deterministic=config['misc']['deterministic'],
         profiler=profiler,
