@@ -307,7 +307,7 @@ def objective(trial):
 
     # Define the device and manually initialize lazy layers
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    model.initialize_lazy_layers(input_shape=(1, 3, 32, 32), device=device)
+    model.initialize_lazy_layers(input_shape=(1, 3, 224, 224), device=device)
 
     # Set up logging
     loggers = []
