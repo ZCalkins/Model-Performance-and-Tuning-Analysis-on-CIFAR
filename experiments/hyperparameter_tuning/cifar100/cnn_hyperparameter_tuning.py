@@ -224,7 +224,7 @@ def create_cnn_config(trial):
                 kernel_size = 3
                 
             stride = trial.suggest_int(f'stride_{i}', 1, 2) if use_strided_conv else 1
-            padding = 
+            padding = (kernel_size - 1) // 2
             use_batch_norm = trial.suggest_categorical(f'use_batch_norm_{i}', [True, False])
             use_dropout = trial.suggest_categorical(f'use_dropout_{i}', [True, False])
             dropout_rate = trial.suggest_float(f'dropout_rate_{i}', 0.1, 0.5) if use_dropout else 0.0
