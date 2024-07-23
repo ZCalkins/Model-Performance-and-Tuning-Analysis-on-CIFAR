@@ -1,6 +1,6 @@
 -r requirements.pip
 
-numpy==1.26.4
+numpy<2.0.0
 optuna==3.6.1
 pytorch_lightning==2.3.3
 torchmetrics==1.4.0.post0
