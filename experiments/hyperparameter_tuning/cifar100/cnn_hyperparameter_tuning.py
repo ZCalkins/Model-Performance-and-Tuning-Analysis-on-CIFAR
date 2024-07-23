@@ -206,11 +206,11 @@ class CIFAR100DataModule(pl.LightningDataModule):
 
 def create_cnn_config(trial):
     try:
-        num_layers = trial.suggest_int('num_layers', 6, 16)
+        num_layers = trial.suggest_int('num_layers', 6, 12)
         layers = []
         in_channels = 3
 
-        use_strided_conv = num_layers > 12
+        use_strided_conv = num_layers > 8
         default_to_pooling = not use_strided_conv
     
         for i in range(num_layers):
@@ -224,7 +224,7 @@ def create_cnn_config(trial):
                 kernel_size = 3
                 
             stride = trial.suggest_int(f'stride_{i}', 1, 2) if use_strided_conv else 1
-            padding = trial.suggest_int(f'padding_{i}', 0, 3)
+            padding = 
             use_batch_norm = trial.suggest_categorical(f'use_batch_norm_{i}', [True, False])
             use_dropout = trial.suggest_categorical(f'use_dropout_{i}', [True, False])
             dropout_rate = trial.suggest_float(f'dropout_rate_{i}', 0.1, 0.5) if use_dropout else 0.0
