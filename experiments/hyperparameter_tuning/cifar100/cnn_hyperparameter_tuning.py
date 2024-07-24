@@ -14,7 +14,6 @@ import torchmetrics
 from pytorch_lightning.loggers import TensorBoardLogger
 from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
 from pytorch_lightning.profilers import SimpleProfiler
-import torch.distributed as dist
 
 # Add the project root directory to the Python path
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -137,16 +136,6 @@ class LitCNNModel(pl.LightningModule):
         elif self.config.optimizer_class == 'SGD':
             optimizer = torch.optim.SGD(self.parameters(), **self.config.optimizer_params)
         return optimizer
-
-    def initialize_lazy_layers(self, input_shape, device):
-        dummy_input = torch.zeros(input_shape).to(device)
-        self.to(device)
-        self(dummy_input)
-
-        # Broadcasts parameters across GPUs
-        if dist.is_initialized():
-            for param in self.parameters():
-                dist.broadcast(param.data, src=0)
 
 class CIFAR100DataModule(pl.LightningDataModule):
     def __init__(self,
