@@ -341,13 +341,6 @@ def objective(trial):
         callbacks=[early_stopping, checkpoint_callback]
     )
 
-
-    if dist.get_rank() == 0:
-        model.initialize_lazy_layers(input_shape=(1, 3, 224, 224), device=torch.device('cuda'))
-
-    if dist.is_initialized():
-        dist.barrier()
-
     ckpt_path = config['experiment'].get('resume_checkpoint', None)
     trainer.fit(model, datamodule=data_module, ckpt_path=ckpt_path)
     val_result = trainer.validate(model, datamodule=data_module)
