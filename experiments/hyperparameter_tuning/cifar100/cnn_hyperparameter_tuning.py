@@ -8,6 +8,7 @@ import torch
 import numpy as np
 import optuna
 from optuna.exceptions import TrialPruned
+from optuna.samplers import TPESampler
 import pytorch_lightning as pl
 from torch.utils.data import Subset
 import torchmetrics
@@ -322,8 +323,8 @@ def objective(trial):
     trainer = pl.Trainer(
         logger=loggers,
         max_epochs=num_epochs,
-        devices=8,
-        accelerator='auto',
+        devices=torch.cuda.device_count(),
+        accelerator='gpu',
         strategy='ddp',
         precision=16 if config['misc']['use_mixed_precision'] else 32,
         deterministic=config['misc']['deterministic'],
@@ -347,7 +348,8 @@ def objective(trial):
     return val_loss
 
 if __name__ == "__main__":
-    study = optuna.create_study(direction=config['hyperparameter_optimization']['direction'])
+    sampler = TPESampler(seed=seed)
+    study = optuna.create_study(direction=config['hyperparameter_optimization']['direction'], sampler=sampler)
     study.optimize(objective, n_trials=config['hyperparameter_optimization']['n_trials'])
 
     logger.info(f'Best trial: {study.best_trial.value}')
