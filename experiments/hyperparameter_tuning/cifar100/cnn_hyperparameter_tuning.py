@@ -271,7 +271,7 @@ def create_cnn_config(trial):
             output_shape=100,
             optimizer_class=optimizer_class,
             optimizer_params=optimizer_params,
-            batch_size=trial.suggest_int('batch_size', 32, 128, step=16),
+            batch_size=trial.suggest_int('batch_size', 32, 256, step=16),
             num_epochs=trial.suggest_int('num_epochs', 10, 30),
             label_smoothing=label_smoothing
         )
