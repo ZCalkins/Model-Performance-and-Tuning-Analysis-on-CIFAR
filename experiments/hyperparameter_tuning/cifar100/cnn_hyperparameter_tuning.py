@@ -267,7 +267,7 @@ def create_cnn_config(trial):
         cnn_config = CNNModelConfig(
             model_name=config['experiment']['name'],
             layers=layers,
-            input_shape=(3, 32, 32),
+            input_shape=(3, 224, 224),
             output_shape=100,
             optimizer_class=optimizer_class,
             optimizer_params=optimizer_params,
