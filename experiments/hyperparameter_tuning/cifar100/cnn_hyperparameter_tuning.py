@@ -202,13 +202,31 @@ class CIFAR100DataModule(pl.LightningDataModule):
         self.val_dataset = val_dataset
 
     def train_dataloader(self):
-        return get_dataloader(self.train_dataset, batch_size=self.batch_size, shuffle=True, num_workers=self.num_workers)
+        return get_dataloader(self.train_dataset,
+                              batch_size=self.batch_size,
+                              shuffle=True,
+                              num_workers=self.num_workers,
+                              pin_memory=True,
+                              prefetch_factor=2,
+                              persistent_workers=True)
 
     def val_dataloader(self):
-        return get_dataloader(self.val_dataset, batch_size=self.batch_size, shuffle=False, num_workers=self.num_workers)
+        return get_dataloader(self.val_dataset,
+                              batch_size=self.batch_size,
+                              shuffle=False,
+                              num_workers=self.num_workers,
+                              pin_memory=True,
+                              prefetch_factor=2,
+                              persistent_workers=True)
 
     def test_dataloader(self):
-        return get_dataloader(self.val_dataset, batch_size=self.batch_size, shuffle=False, num_workers=self.num_workers)
+        return get_dataloader(self.val_dataset,
+                              batch_size=self.batch_size,
+                              shuffle=False,
+                              num_workers=self.num_workers,
+                              pin_memory=True,
+                              prefetch_factor=2,
+                              persistent_workers=True)
 
 def initialize_model(model, dummy_input):
     model.eval()
@@ -286,7 +304,7 @@ def create_cnn_config(trial):
             output_shape=100,
             optimizer_class=optimizer_class,
             optimizer_params=optimizer_params,
-            batch_size=trial.suggest_int('batch_size', 32, 256, step=16),
+            batch_size=trial.suggest_int('batch_size', 32, 128, step=16),
             num_epochs=trial.suggest_int('num_epochs', 10, 30),
             label_smoothing=label_smoothing
         )
