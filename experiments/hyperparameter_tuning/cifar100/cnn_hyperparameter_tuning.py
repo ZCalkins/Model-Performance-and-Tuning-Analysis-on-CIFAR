@@ -106,6 +106,7 @@ class LitCNNModel(pl.LightningModule):
 
     def training_step(self, batch, batch_idx):
         x, y = batch
+        x, y = x.to(device), y.to(device)
         logits = self(x)
         loss = self.loss_fn(logits, y)
         self.log('train_loss', loss, prog_bar=True)
@@ -118,6 +119,7 @@ class LitCNNModel(pl.LightningModule):
 
     def validation_step(self, batch, batch_idx):
         x, y = batch
+        x, y = x.to(device), y.to(device)
         logits = self(x)
         loss = self.loss_fn(logits, y)
         self.log('val_loss', loss, prog_bar=True)
@@ -308,9 +310,8 @@ def objective(trial):
         flatten=False,
         use_smaller_dataset=use_smaller_dataset
     )
-    model = LitCNNModel(config=cnn_config)
-    model = model.to('cuda')
-    dummy_input = torch.randn(1, 3, 224, 224).to('cuda')
+    model = LitCNNModel(config=cnn_config).to(device)
+    dummy_input = torch.randn(1, 3, 224, 224).to(device)
     initialize_model(model, dummy_input)
 
     # Set up logging
