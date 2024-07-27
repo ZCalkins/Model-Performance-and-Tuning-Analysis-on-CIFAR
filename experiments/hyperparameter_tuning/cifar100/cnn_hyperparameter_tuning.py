@@ -363,7 +363,7 @@ def objective(trial):
         logger=loggers,
         max_epochs=num_epochs,
         devices=torch.cuda.device_count(),
-        accelerator='gpu',
+        accelerator=device,
         strategy='ddp',
         precision=16 if config['misc']['use_mixed_precision'] else 32,
         deterministic=config['misc']['deterministic'],
