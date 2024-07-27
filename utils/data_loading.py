@@ -31,7 +31,7 @@ def get_dataset(name='CIFAR100',
             v2.CenterCrop(size),
         ])
 
-    transformations.append(v2.compose([v2.ToImageTensor(), v2.ConvertImageDType()]))
+    transformations.append(torchvision.transforms.compose([v2.ToImageTensor(), v2.ConvertImageDType()]))
 
     if normalize:
         transformations.append(v2.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]))
