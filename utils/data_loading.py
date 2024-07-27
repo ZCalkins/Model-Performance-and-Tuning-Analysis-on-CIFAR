@@ -32,7 +32,7 @@ def get_dataset(name='CIFAR100',
             transforms.CenterCrop(size),
         ])
 
-    transformations.append(torchvision.transforms.ToTensor())
+    transformations.append(transforms.ToTensor())
 
     if normalize:
         transformations.append(transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]))
