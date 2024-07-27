@@ -1,4 +1,6 @@
 import os
+os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
+
 import sys
 import random
 import logging
@@ -15,6 +17,9 @@ import torchmetrics
 from pytorch_lightning.loggers import TensorBoardLogger
 from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
 from pytorch_lightning.profilers import SimpleProfiler
+
+import multiprocessing
+multiprocessing.set_start_method('spawn', force=True)
 
 # Add the project root directory to the Python path
 script_dir = os.path.dirname(os.path.abspath(__file__))
