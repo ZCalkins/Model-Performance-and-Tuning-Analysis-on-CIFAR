@@ -1,4 +1,4 @@
-import torch
+isimport torch
 import torchvision
 from torch.utils.data import DataLoader
 import torchvision.datasets as datasets
@@ -48,5 +48,5 @@ def get_dataset(name='CIFAR100',
 
 # DataLoaders
 @gin.configurable
-def get_dataloader(dataset, batch_size=32, shuffle=True, num_workers=2):
-    return DataLoader(dataset, batch_size=batch_size, shuffle=shuffle, num_workers=num_workers)
+def get_dataloader(dataset, batch_size=32, shuffle=True, num_workers=2, pin_memory=True, persistent_workers=True):
+    return DataLoader(dataset, batch_size=batch_size, shuffle=shuffle, num_workers=num_workers,pin_memory=pin_memory, persistent_workers=persistent_workers)
