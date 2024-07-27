@@ -32,7 +32,7 @@ hyperparameter_optimization:
 evaluation:
   metrics: ["accuracy", "precision", "recall", "f1"]
   batch_size: 32
-  num_workers: 4
+  num_workers: 2
 misc:
   debug: false
   use_mixed_precision: false
