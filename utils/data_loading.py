@@ -31,7 +31,7 @@ def get_dataset(name='CIFAR100',
             v2.CenterCrop(size),
         ])
 
-    transformations.append(v2.ToTensor())
+    transformations.append(v2.compose([v2.ToImageTensor(), v2.ConvertImageDType()]))
 
     if normalize:
         transformations.append(v2.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]))
@@ -47,5 +47,5 @@ def get_dataset(name='CIFAR100',
 
 # DataLoaders
 @gin.configurable
-def get_dataloader(dataset, batch_size=32, shuffle=True, num_workers=4):
+def get_dataloader(dataset, batch_size=32, shuffle=True, num_workers=2):
     return DataLoader(dataset, batch_size=batch_size, shuffle=shuffle, num_workers=num_workers)
