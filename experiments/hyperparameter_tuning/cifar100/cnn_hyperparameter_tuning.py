@@ -17,7 +17,6 @@ from pytorch_lightning.loggers import TensorBoardLogger
 from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
 from pytorch_lightning.profilers import SimpleProfiler
 from torchvision import transforms
-from torchvision.transforms import v2
 
 import multiprocessing
 multiprocessing.set_start_method('spawn', force=True)
