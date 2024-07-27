@@ -210,7 +210,6 @@ class CIFAR100DataModule(pl.LightningDataModule):
                               shuffle=True,
                               num_workers=self.num_workers,
                               pin_memory=True,
-                              prefetch_factor=2,
                               persistent_workers=True)
 
     def val_dataloader(self):
@@ -219,7 +218,6 @@ class CIFAR100DataModule(pl.LightningDataModule):
                               shuffle=False,
                               num_workers=self.num_workers,
                               pin_memory=True,
-                              prefetch_factor=2,
                               persistent_workers=True)
 
     def test_dataloader(self):
@@ -228,7 +226,6 @@ class CIFAR100DataModule(pl.LightningDataModule):
                               shuffle=False,
                               num_workers=self.num_workers,
                               pin_memory=True,
-                              prefetch_factor=2,
                               persistent_workers=True)
 
 def initialize_model(model, dummy_input):
