@@ -1,6 +1,6 @@
 general:
   seed: 42
-  num_workers: 4
+  num_workers: 2
 experiment:
   name: "CNN_Hyperparameter_Tuning_CIFAR100"
   description: "CNN hyperparameter tuning on the CIFAR100 dataset"
