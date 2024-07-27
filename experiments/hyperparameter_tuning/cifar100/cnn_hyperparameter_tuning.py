@@ -50,6 +50,9 @@ profiler_enabled = config['misc']['profiler_enabled']
 # Set random seed for reproducibility
 pl.seed_everything(seed)
 
+# Set the device
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
 # Manual configuration for deterministic behavior
 if deterministic:
     torch.manual_seed(seed)
@@ -306,7 +309,7 @@ def objective(trial):
         use_smaller_dataset=use_smaller_dataset
     )
     model = LitCNNModel(config=cnn_config)
-
+    model = model.to('cuda')
     dummy_input = torch.randn(1, 3, 224, 224).to('cuda')
     initialize_model(model, dummy_input)
 
