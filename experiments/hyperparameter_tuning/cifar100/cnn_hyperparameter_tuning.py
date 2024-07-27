@@ -200,6 +200,12 @@ class CIFAR100DataModule(pl.LightningDataModule):
     def test_dataloader(self):
         return get_dataloader(self.val_dataset, batch_size=self.batch_size, shuffle=False, num_workers=self.num_workers)
 
+def initialize_model(model, dummy_input):
+    model.eval()
+    with torch.no_grad():
+        model(dummy_input)
+    model.train()
+
 def create_cnn_config(trial):
     try:
         num_layers = trial.suggest_int('num_layers', 6, 12)
@@ -300,6 +306,9 @@ def objective(trial):
         use_smaller_dataset=use_smaller_dataset
     )
     model = LitCNNModel(config=cnn_config)
+
+    dummy_input = torch.randn(1, 3, 224, 224).to('cuda')
+    initialize_model(model, dummy_input)
 
     # Set up logging
     loggers = []
