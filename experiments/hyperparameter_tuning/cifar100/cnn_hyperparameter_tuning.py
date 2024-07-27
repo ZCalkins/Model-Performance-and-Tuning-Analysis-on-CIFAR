@@ -102,7 +102,7 @@ class LitCNNModel(pl.LightningModule):
         self.val_f1 = torchmetrics.F1Score(task="multiclass", num_classes=config.output_shape)
 
     def forward(self, x):
-        return self.model(x)
+        return self.model(x.to(device))
 
     def training_step(self, batch, batch_idx):
         x, y = batch
