@@ -1,4 +1,4 @@
-isimport torch
+import torch
 import torchvision
 from torch.utils.data import DataLoader
 import torchvision.datasets as datasets
