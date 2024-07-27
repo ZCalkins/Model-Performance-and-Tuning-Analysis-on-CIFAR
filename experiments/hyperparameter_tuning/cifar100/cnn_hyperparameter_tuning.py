@@ -53,6 +53,9 @@ use_smaller_dataset = config['misc']['use_smaller_dataset']
 num_epochs_debug = config['misc']['num_epochs_debug']
 profiler_enabled = config['misc']['profiler_enabled']
 
+# Lower precision to enhance performance
+torch.set_float32_matmul_precision("high")
+
 # Set random seed for reproducibility
 pl.seed_everything(seed)
 
