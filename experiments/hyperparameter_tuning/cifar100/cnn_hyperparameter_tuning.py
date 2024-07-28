@@ -2,6 +2,7 @@ import os
 import sys
 import random
 import logging
+import multiprocessing
 
 import yaml
 import torch
@@ -19,8 +20,8 @@ from pytorch_lightning.profilers import SimpleProfiler
 from torchvision import transforms
 import torch.distributed as dist
 import torch.multiprocessing as mp
+from pytorch_lightning.utilities.distributed import rank_zero_only
 
-import multiprocessing
 multiprocessing.set_start_method('spawn', force=True)
 
 # Add the project root directory to the Python path
@@ -246,6 +247,11 @@ def initialize_model(model, dummy_input):
         model(dummy_input)
     model.train()
 
+@rank_zero_only
+def broadcast_config(trial):
+    cnn_config = create_cnn_config(trial)
+    return cnn_config
+
 def create_cnn_config(trial):
     try:
         num_layers = trial.suggest_int('num_layers', 6, 12)
@@ -331,7 +337,8 @@ def objective(trial):
     # Mitigation for out of memory errors
     torch.cuda.empty_cache()
     
-    cnn_config = create_cnn_config(trial)
+    cnn_config = broadcast_config(trial)
+    torch.distributed.barrrier() # ensures all ranks have the same cnn_config
 
     # Suggest image transform
     transform_type = trial.suggest_categorical('transform_type', ['standard', 'augmented'])
@@ -372,7 +379,7 @@ def objective(trial):
         max_epochs=num_epochs,
         devices=torch.cuda.device_count(),
         accelerator='gpu',
-        strategy='ddp_spawn',
+        strategy='ddp',
         precision=16 if config['misc']['use_mixed_precision'] else 32,
         deterministic=config['misc']['deterministic'],
         profiler=profiler,
@@ -394,17 +401,10 @@ def objective(trial):
     
     return val_loss
 
-if rank == 0:
+if __name__ == "__main__":
     sampler = TPESampler(seed=seed)
     study = optuna.create_study(direction=config['hyperparameter_optimization']['direction'], sampler=sampler)
     study.optimize(objective, n_trials=config['hyperparameter_optimization']['n_trials'])
 
     logger.info(f'Best trial: {study.best_trial.value}')
     logger.info(f'Best hyperparameters: {study.best_trial.params}')
-cleanup()
-
-if __name__ == "__main__":
-    world_size = torch.cuda.device_count()
-    mp.spawn(main, args=(world_size,), nprocs=world_size, join=True)
-    
-
