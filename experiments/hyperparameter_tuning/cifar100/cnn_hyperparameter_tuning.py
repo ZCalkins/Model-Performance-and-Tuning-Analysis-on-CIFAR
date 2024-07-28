@@ -17,6 +17,8 @@ from pytorch_lightning.loggers import TensorBoardLogger
 from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
 from pytorch_lightning.profilers import SimpleProfiler
 from torchvision import transforms
+import torch.distributed as dist
+import torch.multiprocessing as mp
 
 import multiprocessing
 multiprocessing.set_start_method('spawn', force=True)
@@ -44,6 +46,15 @@ config['experiment']['tensorboard_log_dir'] = os.path.join(project_root, 'logs',
 from utils.data_loading import get_dataset, get_dataloader
 from models.cnn_model import CNNModel, CNNModelConfig, CNNLayerConfig
 
+def setup(rank, world_size):
+    dist.init_process_group(backend="nccl", rank=rank, world_size=world_size)
+
+def cleanup():
+    dist.destroy_process_group()
+
+def main(rank, world_size):
+    setup(rank, world_size)
+
 # Set up general configurations
 seed = config['general']['seed']
 num_workers = config['general']['num_workers']
@@ -59,7 +70,8 @@ torch.set_float32_matmul_precision("high")
 pl.seed_everything(seed)
 
 # Set the device
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+torch.cuda.set_device(rank)
+device = torch.device('cuda', rank) if torch.cuda.is_available() else torch.device('cpu')
 
 # Manual configuration for deterministic behavior
 if deterministic:
@@ -359,8 +371,8 @@ def objective(trial):
         logger=loggers,
         max_epochs=num_epochs,
         devices=torch.cuda.device_count(),
-        accelerator='cuda',
-        strategy='ddp',
+        accelerator='gpu',
+        strategy='ddp_spawn',
         precision=16 if config['misc']['use_mixed_precision'] else 32,
         deterministic=config['misc']['deterministic'],
         profiler=profiler,
@@ -382,10 +394,17 @@ def objective(trial):
     
     return val_loss
 
-if __name__ == "__main__":
+if rank == 0:
     sampler = TPESampler(seed=seed)
     study = optuna.create_study(direction=config['hyperparameter_optimization']['direction'], sampler=sampler)
     study.optimize(objective, n_trials=config['hyperparameter_optimization']['n_trials'])
 
     logger.info(f'Best trial: {study.best_trial.value}')
     logger.info(f'Best hyperparameters: {study.best_trial.params}')
+cleanup()
+
+if __name__ == "__main__":
+    world_size = torch.cuda.device_count()
+    mp.spawn(main, args=(world_size,), nprocs=world_size, join=True)
+    
+
