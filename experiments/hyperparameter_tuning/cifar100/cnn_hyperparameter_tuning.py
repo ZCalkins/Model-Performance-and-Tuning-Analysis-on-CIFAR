@@ -112,10 +112,6 @@ class LitCNNModel(pl.LightningModule):
     def forward(self, x):
         return self.model(x.to(device))
 
-    def initialize_weights(self):
-        def init_weights(m):
-            
-
     def training_step(self, batch, batch_idx):
         x, y = batch
         x, y = x.to(device), y.to(device)
