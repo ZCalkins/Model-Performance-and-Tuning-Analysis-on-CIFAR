@@ -330,6 +330,7 @@ def objective(trial):
         flatten=False,
         use_smaller_dataset=use_smaller_dataset
     )
+    model = LitCNNModel(config=cnn_config).to(torch.device('cuda'))
 
     # Set up logging
     loggers = []
@@ -383,6 +384,8 @@ def objective(trial):
     return val_loss
 
 if __name__ == "__main__":
+    dist.init_process_group(backend='nccl')
+    
     sampler = TPESampler(seed=seed)
     study = optuna.create_study(direction=config['hyperparameter_optimization']['direction'], sampler=sampler)
     study.optimize(objective, n_trials=config['hyperparameter_optimization']['n_trials'])
