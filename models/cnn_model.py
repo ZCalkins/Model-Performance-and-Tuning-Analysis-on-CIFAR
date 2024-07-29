@@ -3,6 +3,7 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Tuple
 import torch
 from torch import nn
+import torch.nn.init as init
 import importlib
 
 @gin.configurable
@@ -45,6 +46,26 @@ class CNNModelConfig:
     batch_size: int = 32
     num_epochs: int = 10
     label_smoothing: float = 0.0
+
+def initialize_weights(layer):
+    if isinstance(layer, nn.Conv2d) or isinstance(layer, nn.Linear):
+        if hasattr(layer, 'weight') and layer.weight is not None:
+            if isinstance(layer, nn.Conv2d):
+                if any(isinstance(activation, nn.ReLU) for activation in layer.children()):
+                    nn.init.kaiming_normal_(layer.weight, mode='fan_out', nonlinearity='relu')
+                elif any(isinstance(activation, nn.LeakyReLU) for activation in layer.children()):
+                    nn.init.kaiming_normal_(layer.weight, mode='fan_out', nonlinearity='leaky_relu')
+                else:
+                    nn.init.xavier_normal_(layer.weight)
+            elif isinstance(layer, nn.Linear):
+                nn.init.xavier_normal_(layer.weight)
+        if hasattr(layer, 'bias') and layer.bias is not None:
+            nn.init.constant_(layer.bias, 0)
+    elif isinstance(layer, nn.BatchNorm2d):
+        if hasattr(layer, 'weight') and layer.weight is not None:
+            nn.init.constant_(layer.weight, 1)
+        if hasattr(layer, 'bias') and layer.bias is not None:
+            nn.init.constant_(layer.bias, 0)
 
 @gin.configurable
 class CNNModel(nn.Module):
@@ -111,6 +132,11 @@ class CNNModel(nn.Module):
             nn.Flatten(),
             nn.LazyLinear(config.output_shape)
         )
+
+        self.apply(initialize_weights)
+
+        dummy_input = torch.zeros(1, *config.input_shape)
+        self(dummy_input)
 
     def forward(self, x):
         x = self.layers(x)
