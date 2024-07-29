@@ -224,12 +224,14 @@ class CIFAR100DataModule(pl.LightningDataModule):
                               pin_memory=True,
                               persistent_workers=True)
 
-@rank_zero_only
 def broadcast_config(trial):
     cnn_config = create_cnn_config(trial)
+    dist.barrier()
     dist.broadcast_object_list([cnn_config], src=0)
+    dist.barrier()
     return cnn_config
 
+@rank_zero_only
 def create_cnn_config(trial):
     try:
         num_layers = trial.suggest_int('num_layers', 6, 12)
