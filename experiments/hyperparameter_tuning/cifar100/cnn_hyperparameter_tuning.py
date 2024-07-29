@@ -332,7 +332,7 @@ def objective(trial):
     torch.cuda.empty_cache()
     
     cnn_config = broadcast_config(trial)
-    torch.distributed.barrrier() # ensures all ranks have the same cnn_config
+    torch.distributed.barrier() # ensures all ranks have the same cnn_config
 
     # Suggest image transform
     transform_type = trial.suggest_categorical('transform_type', ['standard', 'augmented'])
