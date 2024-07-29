@@ -18,21 +18,7 @@ from pytorch_lightning.loggers import TensorBoardLogger
 from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
 from pytorch_lightning.profilers import SimpleProfiler
 from torchvision import transforms
-import torch.distributed as dist
-import torch.multiprocessing as mp
 from pytorch_lightning.utilities.rank_zero import rank_zero_only
-
-multiprocessing.set_start_method('spawn', force=True)
-
-# Initialize process group for distributed training
-dist.init_process_group(backend='nccl')
-
-# Define rank using environment variable
-rank = int(os.environ["LOCAL_RANK"])
-
-# Set device
-torch.cuda.set_device(rank)
-device = torch.device('cuda', rank) if torch.cuda.is_available() else torch.device('cpu')
 
 # Add the project root directory to the Python path
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -328,6 +314,9 @@ def objective(trial):
     # Mitigation for out of memory errors
     torch.cuda.empty_cache()
 
+    # Broadcast configuration across processes
+    cnn_config = broadcast_config(trial)
+
     # Suggest image transform
     transform_type = trial.suggest_categorical('transform_type', ['standard', 'augmented'])
     
@@ -340,9 +329,6 @@ def objective(trial):
         flatten=False,
         use_smaller_dataset=use_smaller_dataset
     )
-    model = LitCNNModel(config=cnn_config).to(device)
-    dummy_input = torch.randn(1, 3, 224, 224).to(device)
-    initialize_model(model, dummy_input)
 
     # Set up logging
     loggers = []
