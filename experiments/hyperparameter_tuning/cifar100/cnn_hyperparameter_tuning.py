@@ -2,7 +2,6 @@ import os
 import sys
 import random
 import logging
-import multiprocessing
 
 import yaml
 import torch
@@ -19,6 +18,7 @@ from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
 from pytorch_lightning.profilers import SimpleProfiler
 from torchvision import transforms
 from pytorch_lightning.utilities.rank_zero import rank_zero_only
+import torch.distributed as dist
 
 # Add the project root directory to the Python path
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -227,6 +227,7 @@ class CIFAR100DataModule(pl.LightningDataModule):
 @rank_zero_only
 def broadcast_config(trial):
     cnn_config = create_cnn_config(trial)
+    dist.broadcast_object_list([cnn_config], src=0)
     return cnn_config
 
 def create_cnn_config(trial):
@@ -360,11 +361,16 @@ def objective(trial):
         callbacks=[early_stopping, checkpoint_callback]
     )
 
+    dist.barrier()
+
     ckpt_path = config['experiment'].get('resume_checkpoint', None)
     trainer.fit(model, datamodule=data_module, ckpt_path=ckpt_path)
+
+    dist.barrier()
+    
     val_result = trainer.validate(model, datamodule=data_module)
     val_loss = val_result[0]['val_loss']
-
+    
     if tensorboard_logger:
         tensorboard_logger.log_hyperparams(trial.params, {'val_loss': val_loss})
 
@@ -372,6 +378,8 @@ def objective(trial):
     os.makedirs(os.path.dirname(results_file), exist_ok=True)
     with open(results_file, 'w') as f:
         yaml.dump({'trial': trial.number, 'params': trial.params, 'val_loss': val_loss}, f)
+
+    dist.barrier()
     
     return val_loss
 
