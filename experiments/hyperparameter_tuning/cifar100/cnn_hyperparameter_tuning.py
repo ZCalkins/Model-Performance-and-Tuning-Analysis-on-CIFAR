@@ -24,6 +24,9 @@ from pytorch_lightning.utilities.rank_zero import rank_zero_only
 
 multiprocessing.set_start_method('spawn', force=True)
 
+# Initialize process group for distributed training
+dist.init_process_group(backend='nccl')
+
 # Define rank using environment variable
 rank = int(os.environ["LOCAL_RANK"])
 
@@ -235,12 +238,6 @@ class CIFAR100DataModule(pl.LightningDataModule):
                               pin_memory=True,
                               persistent_workers=True)
 
-def initialize_model(model, dummy_input):
-    model.eval()
-    with torch.no_grad():
-        model(dummy_input)
-    model.train()
-
 @rank_zero_only
 def broadcast_config(trial):
     cnn_config = create_cnn_config(trial)
@@ -330,9 +327,6 @@ def create_cnn_config(trial):
 def objective(trial):
     # Mitigation for out of memory errors
     torch.cuda.empty_cache()
-    
-    cnn_config = broadcast_config(trial)
-    torch.distributed.barrier() # ensures all ranks have the same cnn_config
 
     # Suggest image transform
     transform_type = trial.suggest_categorical('transform_type', ['standard', 'augmented'])
