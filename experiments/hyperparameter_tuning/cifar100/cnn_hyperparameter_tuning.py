@@ -20,7 +20,7 @@ from pytorch_lightning.profilers import SimpleProfiler
 from torchvision import transforms
 import torch.distributed as dist
 import torch.multiprocessing as mp
-from pytorch_lightning.utilities.distributed import rank_zero_only
+from pytorch_lightning.utilities.rank_zero import rank_zero_only
 
 multiprocessing.set_start_method('spawn', force=True)
 
