@@ -24,6 +24,13 @@ from pytorch_lightning.utilities.rank_zero import rank_zero_only
 
 multiprocessing.set_start_method('spawn', force=True)
 
+# Define rank using environment variable
+rank = int(os.environ["LOCAL_RANK"])
+
+# Set device
+torch.cuda.set_device(rank)
+device = torch.device('cuda', rank) if torch.cuda.is_available() else torch.device('cpu')
+
 # Add the project root directory to the Python path
 script_dir = os.path.dirname(os.path.abspath(__file__))
 project_root = os.path.abspath(os.path.join(script_dir, '..', '..', '..'))
@@ -47,15 +54,6 @@ config['experiment']['tensorboard_log_dir'] = os.path.join(project_root, 'logs',
 from utils.data_loading import get_dataset, get_dataloader
 from models.cnn_model import CNNModel, CNNModelConfig, CNNLayerConfig
 
-def setup(rank, world_size):
-    dist.init_process_group(backend="nccl", rank=rank, world_size=world_size)
-
-def cleanup():
-    dist.destroy_process_group()
-
-def main(rank, world_size):
-    setup(rank, world_size)
-
 # Set up general configurations
 seed = config['general']['seed']
 num_workers = config['general']['num_workers']
@@ -69,10 +67,6 @@ torch.set_float32_matmul_precision("high")
 
 # Set random seed for reproducibility
 pl.seed_everything(seed)
-
-# Set the device
-torch.cuda.set_device(rank)
-device = torch.device('cuda', rank) if torch.cuda.is_available() else torch.device('cpu')
 
 # Manual configuration for deterministic behavior
 if deterministic:
