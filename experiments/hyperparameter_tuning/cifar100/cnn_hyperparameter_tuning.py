@@ -16,9 +16,10 @@ import torchmetrics
 from pytorch_lightning.loggers import TensorBoardLogger
 from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
 from pytorch_lightning.profilers import SimpleProfiler
+from pytorch_lightning.utilities import rank_zero_only
 from torchvision import transforms
-from pytorch_lightning.utilities.rank_zero import rank_zero_only
 import torch.distributed as dist
+
 
 # Add the project root directory to the Python path
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -224,13 +225,6 @@ class CIFAR100DataModule(pl.LightningDataModule):
                               pin_memory=True,
                               persistent_workers=True)
 
-def broadcast_config(trial):
-    cnn_config = create_cnn_config(trial)
-    dist.barrier()
-    dist.broadcast_object_list([cnn_config], src=0)
-    dist.barrier()
-    return cnn_config
-
 @rank_zero_only
 def create_cnn_config(trial):
     try:
@@ -313,6 +307,13 @@ def create_cnn_config(trial):
         print(f"Pruning trial due to invalid configuration: {e}")
         raise optuna.exceptions.TrialPruned()
 
+def broadcast_config(trial):
+    cnn_config = create_cnn_config(trial)
+    dist.barrier()
+    dist.broadcast_object_list([cnn_config], src=0)
+    dist.barrier()
+    return cnn_config
+
 def objective(trial):
     # Mitigation for out of memory errors
     torch.cuda.empty_cache()
@@ -356,7 +357,7 @@ def objective(trial):
         logger=loggers,
         max_epochs=num_epochs,
         devices=torch.cuda.device_count(),
-        accelerator='gpu',
+        accelerator='auto',
         strategy='ddp',
         precision=16 if config['misc']['use_mixed_precision'] else 32,
         deterministic=config['misc']['deterministic'],
@@ -365,7 +366,7 @@ def objective(trial):
     )
 
     dist.barrier()
-
+    
     ckpt_path = config['experiment'].get('resume_checkpoint', None)
     trainer.fit(model, datamodule=data_module, ckpt_path=ckpt_path)
     val_result = trainer.validate(model, datamodule=data_module)
