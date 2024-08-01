@@ -10,6 +10,7 @@ import numpy as np
 import optuna
 from optuna.exceptions import TrialPruned
 from optuna.samplers import TPESampler
+from optuna.integration import PyTorchLightningPruningCallback
 import pytorch_lightning as pl
 from torch.utils.data import Subset
 import torchmetrics
@@ -327,6 +328,7 @@ def objective(trial):
         tensorboard_logger = TensorBoardLogger(config['experiment']['tensorboard_log_dir'], name="cnn_model_hpo", version=f"trial_{trial.number}")
         loggers.append(tensorboard_logger)
 
+    # Instantiate callbacks
     early_stopping = EarlyStopping(
         monitor=config['early_stopping']['monitor'],
         patience=config['early_stopping']['patience'],
@@ -339,6 +341,8 @@ def objective(trial):
         mode='min'
     )
 
+    pruning_callback = PyTorchLightningPruningCallback(trial, monitor='val_loss')
+
     trainer = pl.Trainer(
         logger=loggers,
         max_epochs=num_epochs,
@@ -348,7 +352,7 @@ def objective(trial):
         precision=16 if config['misc']['use_mixed_precision'] else 32,
         deterministic=config['misc']['deterministic'],
         profiler=profiler,
-        callbacks=[early_stopping, checkpoint_callback]
+        callbacks=[early_stopping, checkpoint_callback, pruning_callback]
     )
     
     ckpt_path = config['experiment'].get('resume_checkpoint', None)
