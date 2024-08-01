@@ -108,7 +108,6 @@ class LitCNNModel(pl.LightningModule):
 
     def training_step(self, batch, batch_idx):
         x, y = batch
-        x, y = x.to(device), y.to(device)
         logits = self(x)
         loss = self.loss_fn(logits, y)
         self.log('train_loss', loss, prog_bar=True)
@@ -121,7 +120,6 @@ class LitCNNModel(pl.LightningModule):
 
     def validation_step(self, batch, batch_idx):
         x, y = batch
-        x, y = x.to(device), y.to(device)
         logits = self(x)
         loss = self.loss_fn(logits, y)
         self.log('val_loss', loss, prog_bar=True)
