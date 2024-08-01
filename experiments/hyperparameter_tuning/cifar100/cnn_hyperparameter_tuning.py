@@ -16,10 +16,7 @@ import torchmetrics
 from pytorch_lightning.loggers import TensorBoardLogger
 from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
 from pytorch_lightning.profilers import SimpleProfiler
-from pytorch_lightning.utilities import rank_zero_only
 from torchvision import transforms
-import torch.distributed as dist
-
 
 # Add the project root directory to the Python path
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -225,7 +222,6 @@ class CIFAR100DataModule(pl.LightningDataModule):
                               pin_memory=True,
                               persistent_workers=True)
 
-@rank_zero_only
 def create_cnn_config(trial):
     try:
         num_layers = trial.suggest_int('num_layers', 6, 12)
@@ -307,19 +303,11 @@ def create_cnn_config(trial):
         print(f"Pruning trial due to invalid configuration: {e}")
         raise optuna.exceptions.TrialPruned()
 
-def broadcast_config(trial):
-    cnn_config = create_cnn_config(trial)
-    dist.barrier()
-    dist.broadcast_object_list([cnn_config], src=0)
-    dist.barrier()
-    return cnn_config
-
 def objective(trial):
     # Mitigation for out of memory errors
     torch.cuda.empty_cache()
 
-    # Broadcast configuration across processes
-    cnn_config = broadcast_config(trial)
+    cnn_config = create_cnn_config(trial)
 
     # Suggest image transform
     transform_type = trial.suggest_categorical('transform_type', ['standard', 'augmented'])
@@ -364,15 +352,11 @@ def objective(trial):
         profiler=profiler,
         callbacks=[early_stopping, checkpoint_callback]
     )
-
-    dist.barrier()
     
     ckpt_path = config['experiment'].get('resume_checkpoint', None)
     trainer.fit(model, datamodule=data_module, ckpt_path=ckpt_path)
     val_result = trainer.validate(model, datamodule=data_module)
     val_loss = val_result[0]['val_loss']
-
-    dist.barrier()
     
     if tensorboard_logger:
         tensorboard_logger.log_hyperparams(trial.params, {'val_loss': val_loss})
@@ -381,14 +365,10 @@ def objective(trial):
     os.makedirs(os.path.dirname(results_file), exist_ok=True)
     with open(results_file, 'w') as f:
         yaml.dump({'trial': trial.number, 'params': trial.params, 'val_loss': val_loss}, f)
-
-    dist.barrier()
     
     return val_loss
 
 if __name__ == "__main__":
-    dist.init_process_group(backend='nccl')
-    
     sampler = TPESampler(seed=seed)
     study = optuna.create_study(direction=config['hyperparameter_optimization']['direction'], sampler=sampler)
     study.optimize(objective, n_trials=config['hyperparameter_optimization']['n_trials'])
