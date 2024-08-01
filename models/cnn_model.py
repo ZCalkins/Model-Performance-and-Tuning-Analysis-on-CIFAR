@@ -108,7 +108,7 @@ class CNNModel(nn.Module):
             if layer_config.use_pool and layer_config.pool_type:
                 pool_module = importlib.import_module('torch.nn')
                 PoolClass = getattr(pool_module, layer_config.pool_type)
-                pool = PoolClass(kernel_size=layer_config.pool_size, stride=layer_config.pool_stride)
+                pool = PoolClass(**layer_config.pool_params)
                 modules.append(pool)
             
             # Optional Dropout
