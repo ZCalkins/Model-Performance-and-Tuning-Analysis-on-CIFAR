@@ -319,7 +319,7 @@ def objective(trial):
         flatten=False,
         use_smaller_dataset=use_smaller_dataset
     )
-    model = LitCNNModel(config=cnn_config).to(torch.device('cuda'))
+    model = LitCNNModel(config=cnn_config)
 
     # Set up logging
     loggers = []
