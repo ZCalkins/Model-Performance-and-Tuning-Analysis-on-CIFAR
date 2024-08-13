@@ -1,9 +1,18 @@
-# ignore all files in the logs directory
-/logs/*
-
 # Ignore data directory
-data/*
-!data/*.dvc
+data/**
+!data/**/*.dvc
+
+# Ignore logs directory
+logs/**
+!logs/**/*.dvc
+
+# Ignore results directory
+results/**
+!results/**/*.dvc
+
+# Ignore checkpoints directory
+checkpoints/**
+!checkpoints/**/*.dvc
 
 # Ignore Python bytecode files
 __pycache__/
