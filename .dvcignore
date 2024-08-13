@@ -1,3 +1,33 @@
-# Add patterns of files dvc should ignore, which could improve
-# the performance. Learn more at
-# https://dvc.org/doc/user-guide/dvcignore
+# Ignore logs directory
+/logs/**
+!/logs/**/*.dvc
+
+# Ignore data directory
+/data/**
+!/data/**/*.dvc
+
+# Ignore results directory
+/results/**
+!/results/**/*.dvc
+
+# Ignore Python bytecode files
+__pycache__/
+*.pyc
+
+# Ignore virtual environment directories
+venv/
+env/
+
+# Ignore Jupyter notebook checkpoints
+.ipynb_checkpoints/
+
+# Track important project files and directories
+!*.yaml
+!*.yml
+!requirements.txt
+!requirements.pip
+!/configurations/**
+!/experiments/**
+!/models/**
+!/notebooks/**
+!/utils/**
