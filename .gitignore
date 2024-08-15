@@ -2,18 +2,6 @@
 data/**
 !data/**/*.dvc
 
-# Ignore logs directory
-logs/**
-!logs/**/*.dvc
-
-# Ignore results directory
-results/**
-!results/**/*.dvc
-
-# Ignore checkpoints directory
-checkpoints/**
-!checkpoints/**/*.dvc
-
 # Ignore Python bytecode files
 __pycache__/
 *.pyc
@@ -21,9 +9,3 @@ __pycache__/
 # Ignore virtual environment directories
 venv/*
 env/*
-
-# Ignore Jupyter notebook checkpoints
-.ipynb_checkpoints/*
-/checkpoints
-/results
-/logs
