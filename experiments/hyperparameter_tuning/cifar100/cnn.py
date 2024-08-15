@@ -319,7 +319,7 @@ def objective(trial):
     # Set up MLflow logger for PyTorch Lightning
     mlflow_logger = MLflowLogger(
         experiment_name="cifar100_cnn_hpo",
-        tracking_url="https://dagshub.com/ZCalkins/Model-Performance-and-Tuning-Analysis-on-CIFAR.mlflow"
+        tracking_uri="https://dagshub.com/ZCalkins/Model-Performance-and-Tuning-Analysis-on-CIFAR.mlflow"
     )
         
     # Instantiate callbacks
@@ -338,7 +338,7 @@ def objective(trial):
     pruning_callback = PyTorchLightningPruningCallback(trial, monitor='val_loss')
 
     trainer = pl.Trainer(
-        logger=loggers,
+        logger=mlflow_logger,
         max_epochs=num_epochs,
         devices=torch.cuda.device_count(),
         accelerator='auto',
@@ -359,8 +359,9 @@ def objective(trial):
 if __name__ == "__main__":
 
     mlflow_callback = MLflowCallback(
-        tracking_url="https://dagshub.com/ZCalkins/Model-Performance-and-Tuning-Analysis-on-CIFAR.mlflow",
+        tracking_uri="https://dagshub.com/ZCalkins/Model-Performance-and-Tuning-Analysis-on-CIFAR.mlflow",
         metric="val_loss"
+    )
     
     sampler = TPESampler(seed=seed)
     study = optuna.create_study(direction=config['hyperparameter_optimization']['direction'], sampler=sampler)
