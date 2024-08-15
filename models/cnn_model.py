@@ -6,7 +6,6 @@ from torch import nn
 import torch.nn.init as init
 import importlib
 
-@gin.configurable
 @dataclass
 class CNNLayerConfig:
     in_channels: int
@@ -32,7 +31,6 @@ class CNNLayerConfig:
             'stride': self.pool_stride,
         }
 
-@gin.configurable
 @dataclass
 class CNNModelConfig:
     model_name: str
@@ -67,7 +65,6 @@ def initialize_weights(layer):
         if hasattr(layer, 'bias') and layer.bias is not None:
             nn.init.constant_(layer.bias, 0)
 
-@gin.configurable
 class CNNModel(nn.Module):
     def __init__(self, config: CNNModelConfig):
         super().__init__()
