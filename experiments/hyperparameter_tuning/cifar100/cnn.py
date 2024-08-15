@@ -232,14 +232,7 @@ def create_cnn_config(trial):
     
         for i in range(num_layers):
             out_channels = trial.suggest_int(f'out_channels_{i}', 32, 256, step=16)
-            
-            if i < num_layers // 4:
-                kernel_size = 7
-            elif i < num_layers // 2:
-                kernel_size = 5
-            else:
-                kernel_size = 3
-                
+            kernel_size = 7 if i < num_layers // 4 else 5 if i < num_layers // 2 else 3
             stride = trial.suggest_int(f'stride_{i}', 1, 2) if use_strided_conv else 1
             padding = (kernel_size - 1) // 2
             use_batch_norm = trial.suggest_categorical(f'use_batch_norm_{i}', [True, False])
