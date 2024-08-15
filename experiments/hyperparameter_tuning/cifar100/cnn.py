@@ -241,16 +241,10 @@ def create_cnn_config(trial):
             dropout_rate = trial.suggest_float(f'dropout_rate_{i}', 0.1, 0.5) if use_dropout else 0.0
             activation = trial.suggest_categorical(f'activation_{i}', ['ReLU', 'LeakyReLU', 'SiLU'])
 
-            if default_to_pooling and i % 3 == 2:
-                use_pool = True
-                pool_type = trial.suggest_categorical(f'pool_type_{i}', ['MaxPool2d', 'AvgPool2d'])
-                pool_size = trial.suggest_int(f'pool_size_{i}', 2, 3)
-                pool_stride = trial.suggest_int(f'pool_stride_{i}', 2, 3)
-            else:
-                use_pool = False
-                pool_type = None
-                pool_size = None
-                pool_stride = None
+            use_pool = default_to_pooling and i % 3 == 2
+            pool_type = trial.suggest_categorical(f'pool_type_{i}', ['MaxPool2d', 'AvgPool2d']) if use_pool else None
+            pool_size = trial.suggest_int(f'pool_size_{i}', 2, 3) if use_pool else None
+            pool_stride = trial.suggest_int(f'pool_stride_{i}', 2, 3) if use_pool else None
     
             layer_config = CNNLayerConfig(
                 in_channels=in_channels,
@@ -365,7 +359,7 @@ if __name__ == "__main__":
     
     sampler = TPESampler(seed=seed)
     study = optuna.create_study(direction=config['hyperparameter_optimization']['direction'], sampler=sampler)
-    study.optimize(objective, n_trials=config['hyperparameter_optimization']['n_trials'])
+    study.optimize(objective, n_trials=config['hyperparameter_optimization']['n_trials'], callbacks=[mlflow_callback])
 
     logger.info(f'Best trial: {study.best_trial.value}')
     logger.info(f'Best hyperparameters: {study.best_trial.params}')
