@@ -11,10 +11,11 @@ import optuna
 from optuna.exceptions import TrialPruned
 from optuna.samplers import TPESampler
 from optuna.integration import PyTorchLightningPruningCallback
+from optuna.integration.mlflow import MLflowCallback
 import pytorch_lightning as pl
 from torch.utils.data import Subset
 import torchmetrics
-from pytorch_lightning.loggers import TensorBoardLogger
+from pytorch_lightning.loggers import MLflowLogger
 from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
 from pytorch_lightning.profilers import SimpleProfiler
 from torchvision import transforms
@@ -284,8 +285,8 @@ def create_cnn_config(trial):
             output_shape=100,
             optimizer_class=optimizer_class,
             optimizer_params=optimizer_params,
-            batch_size=trial.suggest_int('batch_size', 32, 128, step=16),
-            num_epochs=trial.suggest_int('num_epochs', 10, 30),
+            batch_size=trial.suggest_int('batch_size', 32, 96, step=16),
+            num_epochs=trial.suggest_int('num_epochs', 5, 20),
             label_smoothing=label_smoothing
         )
     
@@ -315,12 +316,12 @@ def objective(trial):
     )
     model = LitCNNModel(config=cnn_config)
 
-    # Set up logging
-    loggers = []
-    if config['monitoring']['tensorboard']:
-        tensorboard_logger = TensorBoardLogger(config['experiment']['tensorboard_log_dir'], name="cnn_model_hpo", version=f"trial_{trial.number}")
-        loggers.append(tensorboard_logger)
-
+    # Set up MLflow logger for PyTorch Lightning
+    mlflow_logger = MLflowLogger(
+        experiment_name="cifar100_cnn_hpo",
+        tracking_url="https://dagshub.com/ZCalkins/Model-Performance-and-Tuning-Analysis-on-CIFAR.mlflow"
+    )
+        
     # Instantiate callbacks
     early_stopping = EarlyStopping(
         monitor=config['early_stopping']['monitor'],
@@ -353,17 +354,14 @@ def objective(trial):
     val_result = trainer.validate(model, datamodule=data_module)
     val_loss = val_result[0]['val_loss']
     
-    if tensorboard_logger:
-        tensorboard_logger.log_hyperparams(trial.params, {'val_loss': val_loss})
-
-    results_file = os.path.join(config['experiment']['save_dir'], f'results_trial_{trial.number}.yaml')
-    os.makedirs(os.path.dirname(results_file), exist_ok=True)
-    with open(results_file, 'w') as f:
-        yaml.dump({'trial': trial.number, 'params': trial.params, 'val_loss': val_loss}, f)
-    
     return val_loss
 
 if __name__ == "__main__":
+
+    mlflow_callback = MLflowCallback(
+        tracking_url="https://dagshub.com/ZCalkins/Model-Performance-and-Tuning-Analysis-on-CIFAR.mlflow",
+        metric="val_loss"
+    
     sampler = TPESampler(seed=seed)
     study = optuna.create_study(direction=config['hyperparameter_optimization']['direction'], sampler=sampler)
     study.optimize(objective, n_trials=config['hyperparameter_optimization']['n_trials'])
