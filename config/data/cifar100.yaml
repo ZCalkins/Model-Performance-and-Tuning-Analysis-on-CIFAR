@@ -1,0 +1,6 @@
+data:
+  name: cifar100
+  batch_size: 32
+  num_workers: 1
+  transform_type: standard
+  size: 224
